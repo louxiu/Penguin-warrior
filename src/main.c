@@ -626,6 +626,7 @@ static void PlayGame()
 int main(int argc, char *argv[])
 {
     enum { GAME_COMPUTER, GAME_NETWORK, GAME_UNKNOWN } game_type = GAME_UNKNOWN;
+    
     char *remote_address = NULL;
     int remote_port;
     int i;
@@ -696,7 +697,8 @@ int main(int argc, char *argv[])
                 printf("Unable to receive connection.\n");
                 exit(EXIT_FAILURE);
             }
-        } else {
+        }
+        else {
             if (ConnectToNetgame(remote_address, remote_port,
                                  &netlink) != 0) {
                 printf("Unable to connect.\n");
