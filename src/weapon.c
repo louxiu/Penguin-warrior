@@ -280,8 +280,10 @@ void DrawPhaserBeam(player_p source, SDL_Surface *surf, int vis_x, int vis_y)
     y1 -= vis_y;
     if (ClipLineAgainstRectangle(&x0, &y0, &x1, &y1, 0, 0,
 				 SCREEN_WIDTH-1, SCREEN_HEIGHT-1) == 0)
-	return;
-    DrawLine16(surf, x0, y0, x1, y1, 0xFFFF);
+        return;
+
+    /// The color of the laser is the last argument
+    DrawLine16(surf, x0, y0, x1, y1, 0xD2FF);
 }
 
 
