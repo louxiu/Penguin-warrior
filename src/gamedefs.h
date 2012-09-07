@@ -7,6 +7,8 @@
 /* Dimensions of the game window. */
 #define SCREEN_WIDTH	640
 #define SCREEN_HEIGHT	480
+/* #define SCREEN_WIDTH	800 */
+/* #define SCREEN_HEIGHT	600 */
 
 /* Number of particles allowed in the particle system. */
 #define MAX_PARTICLES	30000
@@ -20,15 +22,19 @@
 #define TILE_HEIGHT	64
 
 /* Total size (in pixels) of the complete playfield. */
-#define WORLD_WIDTH	2000
-#define WORLD_HEIGHT	2000
+#define WORLD_WIDTH	  2000
+#define WORLD_HEIGHT  2000
 
 /* Limits on the player. */
 #define PLAYER_MAX_VELOCITY	(15.0)
 #define PLAYER_MIN_VELOCITY	(-10.0)
 
+/* Limits on the devil. */
+#define DEVIL_MAX_VELOCITY	(13.0)
+#define DEVIL_MIN_VELOCITY	(-10.0)
+
 #define PLAYER_FORWARD_THRUST	(3)
-#define PLAYER_REVERSE_THRUST	(-2)
+#define PLAYER_REVERSE_THRUST	(-1)
 
 /* These define the scrolling speeds of the front and back background
    layers, relative to the movement of the camera. */
@@ -39,10 +45,13 @@
    mapping between the size of the playing field and the size of the tile grids;
    we can wrap around at some point, and nobody will notice a difference. */
 #define PARALLAX_GRID_WIDTH		100
-#define PARALLAX_GRID_HEIGHT		100
+#define PARALLAX_GRID_HEIGHT	100
 
-/* Amount of damage a single shot does. */
-#define PHASER_DAMAGE                   10
+/* Amount of damage a single shot does.  warrior*/
+#define PHASER_DAMAGE                   16
+
+/* Amount of damage a single shot does. devil*/
+#define PHASER_DAMAGE_DEVIL             1
 
 /* Charge level required to fire. */
 #define PHASER_CHARGE_FIRE              10
@@ -51,10 +60,10 @@
 #define PHASER_CHARGE_MAX               30
 
 /* Roughly the number of charge units per second. */
-#define PHASER_CHARGE_RATE              5
+#define PHASER_CHARGE_RATE              15
 
-/* Duration of each phaser shot, in ticks. (30 ticks/second) */
-#define PHASER_FIRE_TIME                15
+/* Duration of each phaser shot, in ticks. (30 ticks/second) */ 
+#define PHASER_FIRE_TIME                5
 
 /* Time to delay before respawning, in ticks. */
 #define RESPAWN_TIME                    60
@@ -65,8 +74,11 @@
    it needs to be accessible to the other game modules. */
 extern double time_scale;
 
+typedef enum {WARRIOR, DEVIL} player_type;
+
 /* Data structure for player ships */
 typedef struct player_s {
+    player_type type;
     double angle;		/* in clockwise degrees, 0 -> due east */
     double world_x,world_y;	/* coordinates in the world */
     int screen_x,screen_y;	/* onscreen coordinates */
