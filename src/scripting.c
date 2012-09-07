@@ -134,9 +134,9 @@ int RunGameScript()
     /* Call the script's update procedure. */
     status = Tcl_Eval(interp, "playComputer");
     if (status != TCL_OK) {
-	fprintf(stderr, "Error in script: %s\n",
-		Tcl_GetStringResult(interp));
-	return -1;
+        fprintf(stderr, "Error in script: %s\n",
+                Tcl_GetStringResult(interp));
+        return -1;
     }
 
     /* Enforce limits on the script. It can still "cheat" by turning its ship
@@ -144,13 +144,13 @@ int RunGameScript()
        variables, but that's not too much of a problem. We can more or less
        trust the script (it's part of the game). */
     if (opponent.accel > PLAYER_FORWARD_THRUST)
-	opponent.accel = PLAYER_FORWARD_THRUST;
+        opponent.accel = PLAYER_FORWARD_THRUST;
     if (opponent.accel < PLAYER_REVERSE_THRUST)
-	opponent.accel = PLAYER_REVERSE_THRUST;
+        opponent.accel = PLAYER_REVERSE_THRUST;
     while (opponent.angle >= 360)
-	opponent.angle -= 360;
+        opponent.angle -= 360;
     while (opponent.angle < 0)
-	opponent.angle += 360;
+        opponent.angle += 360;
 
     return 0;
 }

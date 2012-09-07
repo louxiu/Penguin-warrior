@@ -1,9 +1,19 @@
-1:Change the color of the laser
+1:Change the color of the laser DONE
 2:Make the sound work
 3:Rewrite it in C++
-4:Implement a scope
+4:Implement a radar
 5:Add more weapons
-6:Change the back ground
+6:Change the background
 7:Use scheme to implement AI part
 8:Use mouse to control it instead of direction keys
-
+9:Add random bonus point in field
+10:Add another AI warrior
+11:Split the laser
+12:Draw boarders around the world
+13:Make the bottom status and top status adjust with the screen size DONE
+14:Make the radar. Point blinking. Transparent?
+15:Use strongswan's random way
+16:Use UDP to communicate
+17:Make a new charge process bar
+18:Modify to make it adjust with screen size
+19:Make the radar more complex, indicate the boarder

@@ -9,7 +9,8 @@ fighter_SOURCES = main.c \
 									audio.c \
 									music.c \
 									weapon.c \
-									status.c
+									status.c \
+									radar.c 
 
 fighter_CPPFLAGS = -I.
 

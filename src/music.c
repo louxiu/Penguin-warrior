@@ -227,8 +227,8 @@ void UpdateMusic()
 	    /* } */
 
 	    if (alGetError() != AL_NO_ERROR) {
-		printf("OpenAL error, disabling music.\n");
-		CleanupMusic();
+            printf("OpenAL error, disabling music.\n");
+            CleanupMusic();
 	    }
         else
         {

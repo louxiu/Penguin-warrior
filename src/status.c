@@ -41,7 +41,7 @@ static int LED_CreateDisplay(LED_Display *disp, int cols, int rows,
     disp->led_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, vcols, vrows, 
 					     8, 0, 0, 0, 0);
     if (disp->led_surface == NULL)
-	return -1;
+        return -1;
 
     disp->virt_w = vcols;
     disp->virt_h = vrows;
@@ -51,10 +51,10 @@ static int LED_CreateDisplay(LED_Display *disp, int cols, int rows,
     disp->virt_y = 0;
 
     for (i = 0; i < 256; i++) {
-	c.r = i;
-	c.g = i;
-	c.b = i;
-	SDL_SetColors(disp->led_surface, &c, i, 1);
+        c.r = i;
+        c.g = i;
+        c.b = i;
+        SDL_SetColors(disp->led_surface, &c, i, 1);
     }
 
     SDL_LockSurface(disp->led_surface);
@@ -107,21 +107,21 @@ static void LED_DrawDisplay(LED_Display *disp, SDL_Surface *dest, int x, int y)
     leds = (Uint8 *)disp->led_surface->pixels;
 
     for (row = 0; row < disp->phys_h; row++) {
-	for (col = 0; col < disp->phys_w; col++) {
-	    int led;
+        for (col = 0; col < disp->phys_w; col++) {
+            int led;
 
-	    destrect.x = col * disp->on_image->w + x;
-	    destrect.y = row * disp->on_image->h + y;
-	    led = leds[(row + disp->virt_y) * disp->led_surface->pitch + 
-		       col + disp->virt_x];
-	    if (led) {
-		SDL_BlitSurface(disp->on_image, &srcrect,
-				dest, &destrect);
-	    } else {
-		SDL_BlitSurface(disp->off_image, &srcrect,
-				dest, &destrect);
-	    }
-	}
+            destrect.x = col * disp->on_image->w + x;
+            destrect.y = row * disp->on_image->h + y;
+            led = leds[(row + disp->virt_y) * disp->led_surface->pitch + 
+                       col + disp->virt_x];
+            if (led) {
+                SDL_BlitSurface(disp->on_image, &srcrect,
+                                dest, &destrect);
+            } else {
+                SDL_BlitSurface(disp->off_image, &srcrect,
+                                dest, &destrect);
+            }
+        }
     }
 
     SDL_UnlockSurface(disp->led_surface);
@@ -305,8 +305,11 @@ void UpdateStatusDisplay(SDL_Surface *screen)
 
     LED_DrawDisplay(&player_score, screen, 0, 0);
     LED_DrawDisplay(&player_shields, screen, 0, 48);
-    LED_DrawDisplay(&player_charge, screen, 0, 471);
-    LED_DrawDisplay(&opponent_score, screen, 544, 0);
-    LED_DrawDisplay(&opponent_shields, screen, 544, 48);
-    LED_DrawDisplay(&status_msg, screen, 96, 0);
+
+    LED_DrawDisplay(&status_msg, screen, 96 + (SCREEN_WIDTH - 2 * 96  - 448) / 2 , 0);
+
+    LED_DrawDisplay(&opponent_score, screen, SCREEN_WIDTH - 96, 0);
+    LED_DrawDisplay(&opponent_shields, screen, SCREEN_WIDTH - 96, 48);
+
+    /// LED_DrawDisplay(&player_charge, screen, 0, SCREEN_HEIGHT - 9);
 }
