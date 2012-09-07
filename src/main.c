@@ -15,6 +15,7 @@
 #include "audio.h"
 #include "weapon.h"
 #include "status.h"
+#include "radar.h"
 
 /* Player data */
 enum { OPP_COMPUTER, OPP_NETWORK } opponent_type;
@@ -66,7 +67,7 @@ SDL_Thread *music_update_thread = NULL;
 static unsigned int getrandom();
 static void initrandom();
 static void DrawPlayer(player_p p);
-static void InitPlayer(player_p p);
+static void InitPlayer(player_p p, player_type type);
 static void UpdatePlayer(player_p p);
 static void PlayGame();
 
@@ -134,8 +135,9 @@ static void DrawPlayer(player_p p)
    ============= */
 
 /* Initializes the given player. */
-static void InitPlayer(player_p p)
+static void InitPlayer(player_p p, player_type type)
 {
+    p->type = type;
     p->world_x = getrandom() % WORLD_WIDTH;
     p->world_y = getrandom() % WORLD_HEIGHT;
     p->accel = 0;
@@ -159,8 +161,16 @@ static void UpdatePlayer(player_p p)
     SDL_LockMutex(player_mutex);
 
     p->velocity += p->accel * time_scale;
-    if (p->velocity > PLAYER_MAX_VELOCITY) p->velocity = PLAYER_MAX_VELOCITY;
-    if (p->velocity < PLAYER_MIN_VELOCITY) p->velocity = PLAYER_MIN_VELOCITY;
+    if (p->type == WARRIOR)
+    {
+        if (p->velocity > PLAYER_MAX_VELOCITY) p->velocity = PLAYER_MAX_VELOCITY;
+        if (p->velocity < PLAYER_MIN_VELOCITY) p->velocity = PLAYER_MIN_VELOCITY;
+    }
+    else if (p->type == DEVIL)
+    {
+        if (p->velocity > DEVIL_MAX_VELOCITY) p->velocity = DEVIL_MAX_VELOCITY;
+        if (p->velocity < DEVIL_MIN_VELOCITY) p->velocity = DEVIL_MIN_VELOCITY; 
+    }
 	
     p->world_x += p->velocity * cos(angle*PI/180.0) * time_scale;
     p->world_y += p->velocity * -sin(angle*PI/180.0) * time_scale;
@@ -318,7 +328,7 @@ static void KillOpponent()
     } else {
         /* Just reset the opponent -- the script doesn't care. A more advanced
            AI system might need to be informed, though. */
-        InitPlayer(&opponent);
+        InitPlayer(&opponent, DEVIL);
     }
 }
 
@@ -358,6 +368,13 @@ int UpdateMusicThread(void *arg)
     return 0;
 }
 
+int mod (int a, int b)
+{
+   int ret = a % b;
+   if(ret < 0)
+     ret+=b;
+   return ret;
+}
 
 /* ==============
    Main Game Loop
@@ -366,6 +383,7 @@ int UpdateMusicThread(void *arg)
 static void PlayGame()
 {
     Uint8 *keystate;
+    int mouse_x, mouse_y;
     int quit = 0;
     int turn;
     int prev_ticks = 0, cur_ticks = 0; /* for keeping track of timing */
@@ -411,6 +429,9 @@ static void PlayGame()
         /* Grab a snapshot of the keyboard. */
         keystate = SDL_GetKeyState(NULL);
 
+        /* Grab a snapshot of the mouse. */
+        SDL_GetMouseState(&mouse_x, &mouse_y);
+        
         /* Lock the mutex so we can access the player's data. */
         SDL_LockMutex(player_mutex);
 		
@@ -452,7 +473,7 @@ static void PlayGame()
 
             if (respawn_timer >= ((double)RESPAWN_TIME / time_scale)) {
                 respawn_timer = -1;
-                InitPlayer(&player);
+                InitPlayer(&player, WARRIOR);
 
 				/* Set the local_player_respawn flag so the
 				   network thread will notify the opponent
@@ -467,18 +488,49 @@ static void PlayGame()
         if (respawn_timer == -1) {
             if (keystate[SDLK_q] || keystate[SDLK_ESCAPE]) quit = 1;
 			
-            /* Left and right arrow keys control turning. */
             turn = 0;
-            if (keystate[SDLK_LEFT]) turn += 10;
-            if (keystate[SDLK_RIGHT]) turn -= 10;
+
+            /// There is bug, it is not turn around according relative angle
+            
+            /* /// Try mouse control first */
+            /* double mouse_vector_x= mouse_x - player.screen_x; */
+            /* double mouse_vector_y= mouse_y - player.screen_y; */
+            /* double mouse_angle_radians = atan2(mouse_vector_x, mouse_vector_y); */
+            /* double mouse_angle = mouse_angle_radians / PI * 180; */
+
+            /* /// East direction is 0.  */
+            /* mouse_angle = mod((int)(mouse_angle - 90), 360); */
+            
+            /* /// printf ("mouse_angle = %f\n", mouse_angle); */
+
+            /* double relative_abs_right = abs(mouse_angle - mod((int)(player.angle - 10), 360)); */
+            /* double relative_abs_left = abs(mouse_angle - mod((int)(player.angle + 10), 360));             */
+
+            /* /// if relative_abs < 10, then do not turn around to avoid jitter */
+            /* if (relative_abs_right < relative_abs_left && relative_abs_right > 10) */
+            /* { */
+            /*     turn -= 10; */
+            /* } */
+            /* else if (relative_abs_right > relative_abs_left && relative_abs_left > 10) */
+            /* { */
+            /*     turn += 10; */
+            /* } */
+            
+            /// There is no input from mouse
+            /* Left and right arrow keys control turning. */
+            if (turn == 0)
+            {
+                if (keystate[SDLK_a]) turn += 10;
+                if (keystate[SDLK_d]) turn -= 10;
+            }
 			
             /* Forward and back arrow keys activate thrusters. */
             player.accel = 0;
-            if (keystate[SDLK_UP]) player.accel = PLAYER_FORWARD_THRUST;
-            if (keystate[SDLK_DOWN]) player.accel = PLAYER_REVERSE_THRUST;
+            if (keystate[SDLK_w]) player.accel = PLAYER_FORWARD_THRUST;
+            if (keystate[SDLK_s]) player.accel = PLAYER_REVERSE_THRUST;
 			
             /* Spacebar fires phasers. */
-            if (keystate[SDLK_SPACE]) {
+            if (keystate[SDLK_j]) {
 
                 if (CanPlayerFire(&player)) {
 
@@ -537,7 +589,7 @@ static void PlayGame()
                 if (CheckPhaserHit(&opponent,&player)) {
 					
                     ShowPhaserHit(&player);
-                    player.shields -= PHASER_DAMAGE;
+                    player.shields -= PHASER_DAMAGE_DEVIL;
 
                     /* Did that destroy the player? */
                     if (respawn_timer < 0 && player.shields <= 0) {
@@ -589,7 +641,8 @@ static void PlayGame()
         if (!awaiting_respawn)
             DrawPlayer(&opponent);
         UpdateStatusDisplay(screen);
-		
+        UpdateRadarDisplay(screen, player.world_x, player.world_y, opponent.world_x, opponent.world_y);
+        
         /* Release the mutex so the networking system can get it.
            It doesn't stay unlocked for very long, but the networking
            system should still have plenty of time. */
@@ -761,14 +814,20 @@ int main(int argc, char *argv[])
     SDL_WM_SetCaption("Penguin Warrior", "Penguin Warrior");
 	
     /* Hide the mouse pointer. */
-    SDL_ShowCursor(0);
+    /// SDL_ShowCursor(0);
 
     /* Initialize the status display. */
     if (InitStatusDisplay() < 0) {
         printf("Unable to initialize status display.\n");
         exit(EXIT_FAILURE);
     }
-		
+
+    if (InitRadarDisplay() < 0) {
+        printf("Unable to initialize radar display.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    
     /* Start the OpenAL-based audio system. */
     InitAudio();
 
@@ -796,8 +855,8 @@ int main(int argc, char *argv[])
     }
 	
     /* Play! */
-    InitPlayer(&player);
-    InitPlayer(&opponent);
+    InitPlayer(&player, WARRIOR);
+    InitPlayer(&opponent, DEVIL);
     PlayGame();
 
     /* Kill the network thread. */
@@ -814,6 +873,9 @@ int main(int argc, char *argv[])
 	
     /* Clean up the status display. */
     CleanupStatusDisplay();
+
+    /* Clean up the radar display. */
+    CleanupRadarDisplay();
 
     /* Unload data. */
     UnloadGameData();
