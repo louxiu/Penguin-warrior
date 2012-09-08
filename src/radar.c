@@ -4,12 +4,16 @@
 #include <string.h>
 #include "gamedefs.h"
 
+typedef enum {on, off} icon_state;
+
 typedef struct radar_Display {
     SDL_Surface *radar_surface;
     int physic_w, physic_h;
     int physic_x, physic_y;
     SDL_Surface *player_icon;
-    SDL_Surface *opp_icon;        
+    int opp_icon_state;
+    SDL_Surface *opp_icon_on;
+    SDL_Surface *opp_icon_off;            
 } radar_Display;
 
 radar_Display radar;
@@ -34,17 +38,25 @@ int InitRadarDisplay(void)
     radar.physic_x = 0;
     radar.physic_y = SCREEN_HEIGHT - 100;
 
-    if ((radar.player_icon = SDL_LoadBMP("led-red-on.bmp")) == NULL)
+    if ((radar.player_icon = SDL_LoadBMP("led-green-on.bmp")) == NULL)
     {
         printf ("Can not load on.bmp\n");
         return -1;
     }
 
-    if ((radar.opp_icon = SDL_LoadBMP("led-red-off.bmp")) == NULL)
+    if ((radar.opp_icon_on = SDL_LoadBMP("led-red-on.bmp")) == NULL)
     {
         printf ("Can not load off.bmp\n");
         return -1;
     }
+
+    if ((radar.opp_icon_off = SDL_LoadBMP("led-red-off.bmp")) == NULL)
+    {
+        printf ("Can not load off.bmp\n");
+        return -1;
+    }
+
+    radar.opp_icon_state = 0;
     
     return 0;
 }
@@ -66,7 +78,7 @@ void UpdateRadarDisplay(SDL_Surface *screen, int player_x, int player_y, int opp
     SDL_Rect srcrect, destrect;
 
     srcrect.w = radar.player_icon->w;
-    srcrect.h = radar.opp_icon->h;
+    srcrect.h = radar.opp_icon_on->h;
     srcrect.x = 0;
     srcrect.y = 0;
     destrect = srcrect;
@@ -88,8 +100,22 @@ void UpdateRadarDisplay(SDL_Surface *screen, int player_x, int player_y, int opp
     if (distance(opp_x / (WORLD_WIDTH /100), opp_y / (WORLD_WIDTH /100), 50, 50) < 50)
     {
         /// Draw opponent icon
-        SDL_BlitSurface(radar.opp_icon, &srcrect,
-                        screen, &destrect);
+        if (radar.opp_icon_state < 10)
+        {
+            SDL_BlitSurface(radar.opp_icon_on, &srcrect,
+                            screen, &destrect);
+            radar.opp_icon_state ++;
+        }
+        else if (radar.opp_icon_state <= 20)
+        {
+            SDL_BlitSurface(radar.opp_icon_off, &srcrect,
+                            screen, &destrect);
+            radar.opp_icon_state ++;
+            if (radar.opp_icon_state == 20)
+            {
+                radar.opp_icon_state = 0;
+            }
+        }
     }
     SDL_Rect src, dest;
 
