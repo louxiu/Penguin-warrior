@@ -81,14 +81,16 @@ static Sint32 seed = 0;
 static void initrandom()
 {
     seed = time(NULL);
+    srand(seed);
 }
 
 static unsigned int getrandom()
 {
-    Sint32 p1 = 1103515245;
-    Sint32 p2 = 12345;
-    seed = (seed*p1+p2) % 2147483647;
-    return (unsigned)seed/3;
+    /* Sint32 p1 = 1103515245; */
+    /* Sint32 p2 = 12345; */
+    /* seed = (seed*p1+p2) % 2147483647; */
+    /* return (unsigned)seed/3; */
+    return (unsigned)rand();
 }
 
 /* =======
@@ -528,7 +530,86 @@ static void PlayGame()
             player.accel = 0;
             if (keystate[SDLK_w]) player.accel = PLAYER_FORWARD_THRUST;
             if (keystate[SDLK_s]) player.accel = PLAYER_REVERSE_THRUST;
-			
+
+            /// Press space to stop the game
+            /// Weird needs to improve 
+            if (keystate[SDLK_SPACE])
+            {
+                SDL_Event event;
+                int restart = 0;
+                SDL_PumpEvents();
+                if(SDL_WaitEvent(&event) != 0);
+                while(SDL_WaitEvent(&event) != 0)
+                {
+                    SDL_keysym keysym;
+                    keysym = event.key.keysym;
+                    printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym));
+                    switch (event.type)
+                    {
+                        case SDL_KEYDOWN:
+
+                            if (keysym.sym == SDLK_SPACE)
+                            {
+                                restart = 1;
+                            }
+                            /// Exit the game
+                            if (keysym.sym == SDLK_q)
+                            {
+                                exit(0);
+                            }
+                            break;
+                        case SDL_KEYUP:
+                            if (keysym.sym == SDLK_SPACE)
+                            {
+                                /// restart = 1;
+                            }
+                            break;
+                        /* case SDL_QUIT: */
+                        /*     printf ("SDL_QUIT, exit the game\n"); */
+                        /*     exit(0);                             */
+                            
+                    }
+                    if (restart == 1)
+                    {
+                        SDL_PumpEvents();
+                        if(SDL_WaitEvent(&event) != 0);
+                        break;
+                    }
+                }
+                /* while(SDL_WaitEvent(&event) != 0) */
+                /* { */
+                /*     SDL_keysym keysym; */
+                /*     int conti = 0; */
+                /*     switch (event.type) */
+                /*     { */
+                /*         case SDL_KEYUP: */
+                /*             if (keysym.sym == SDLK_SPACE) */
+                /*             { */
+                /*                 conti = 1; */
+                /*             } */
+                /*             break; */
+                /*         case SDL_KEYDOWN: */
+                /*             if (keysym.sym == SDLK_q) */
+                /*             { */
+                /*                 exit(0); */
+                /*             } */
+                /*             break; */
+                /*         case SDL_QUIT: */
+                /*             printf ("SDL_QUIT, exit the game\n"); */
+                /*             exit(0);                             */
+                /*     } */
+                /*     if (conti == 1) */
+                /*     { */
+                /*         break; */
+                /*     } */
+                /* } */
+
+            }
+            /// Add screenshot
+            if (keystate[SDLK_q])
+            {
+                SDL_SaveBMP(screen, "screen.bmp");
+            }
             /* Spacebar fires phasers. */
             if (keystate[SDLK_j]) {
 
@@ -814,7 +895,7 @@ int main(int argc, char *argv[])
     SDL_WM_SetCaption("Penguin Warrior", "Penguin Warrior");
 	
     /* Hide the mouse pointer. */
-    /// SDL_ShowCursor(0);
+    SDL_ShowCursor(0);
 
     /* Initialize the status display. */
     if (InitStatusDisplay() < 0) {
