@@ -415,7 +415,8 @@ static void PlayGame()
     if (music_update_thread == NULL) {
         printf("Unable to start music update thread.\n");
     }
-
+    int go_on = 0;
+    
     /* Start the game! */
     while ((quit == 0) && network_ok) {
 
@@ -423,8 +424,13 @@ static void PlayGame()
            the last frame, and update our motion scaling. */
         prev_ticks = cur_ticks;
         cur_ticks = SDL_GetTicks();
-        time_scale = (double)(cur_ticks-prev_ticks)/30.0;
-				
+
+        if(go_on != 4)
+        {
+            time_scale = (double)(cur_ticks-prev_ticks)/30.0;
+        }
+        go_on = 0;
+        
         /* Update SDL's internal input state information. */
         SDL_PumpEvents();
 		
@@ -432,7 +438,7 @@ static void PlayGame()
         keystate = SDL_GetKeyState(NULL);
 
         /* Grab a snapshot of the mouse. */
-        SDL_GetMouseState(&mouse_x, &mouse_y);
+        /* SDL_GetMouseState(&mouse_x, &mouse_y); */
         
         /* Lock the mutex so we can access the player's data. */
         SDL_LockMutex(player_mutex);
@@ -535,47 +541,92 @@ static void PlayGame()
             /// Weird needs to improve 
             if (keystate[SDLK_SPACE])
             {
+                /* while(keystate[SDLK_SPACE]) */
+                /* { */
+                /*     SDL_PumpEvents(); */
+                /*     keystate = SDL_GetKeyState(NULL); */
+                /*     printf ("The space button is down...\n"); */
+                /* } */
                 SDL_Event event;
-                int restart = 0;
+
                 SDL_PumpEvents();
-                if(SDL_WaitEvent(&event) != 0);
-                while(SDL_WaitEvent(&event) != 0)
+
+                //While there's events to handle
+                while( SDL_WaitEvent( &event ) )
                 {
                     SDL_keysym keysym;
-                    keysym = event.key.keysym;
+                    keysym = event.key.keysym;                        
+                    //If the user has Xed out the window
                     printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym));
-                    switch (event.type)
+                    if( keysym.sym == SDLK_SPACE)
                     {
-                        case SDL_KEYDOWN:
-
-                            if (keysym.sym == SDLK_SPACE)
-                            {
-                                restart = 1;
-                            }
-                            /// Exit the game
-                            if (keysym.sym == SDLK_q)
-                            {
-                                exit(0);
-                            }
-                            break;
-                        case SDL_KEYUP:
-                            if (keysym.sym == SDLK_SPACE)
-                            {
-                                /// restart = 1;
-                            }
-                            break;
-                        /* case SDL_QUIT: */
-                        /*     printf ("SDL_QUIT, exit the game\n"); */
-                        /*     exit(0);                             */
-                            
+                        go_on ++;
                     }
-                    if (restart == 1)
+                    if (go_on == 4)
                     {
-                        SDL_PumpEvents();
-                        if(SDL_WaitEvent(&event) != 0);
+                        prev_ticks = SDL_GetTicks();                        
                         break;
                     }
                 }
+
+                /* //While the user hasn't quit */
+                /* while( go_on != 4) */
+                /* { */
+                /*     //While there's events to handle */
+                /*     while( SDL_PollEvent( &event ) ) */
+                /*     { */
+                /*         SDL_keysym keysym; */
+                /*         keysym = event.key.keysym;                         */
+                /*         //If the user has Xed out the window */
+                /*         printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym)); */
+                /*         if( keysym.sym == SDLK_SPACE) */
+                /*         { */
+                /*             go_on ++; */
+                /*         } */
+                /*     } */
+                /* } */
+
+                /* int restart = 0; */
+                /* SDL_PumpEvents(); */
+                /* if(SDL_WaitEvent(&event) != 0); */
+                /* while(SDL_WaitEvent(&event) != 0) */
+                /* { */
+                /*     SDL_keysym keysym; */
+                /*     keysym = event.key.keysym; */
+                /*     printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym)); */
+                /*     switch (event.type) */
+                /*     { */
+                /*         case SDL_KEYDOWN: */
+
+                /*             if (keysym.sym == SDLK_SPACE) */
+                /*             { */
+                /*                 restart = 1; */
+                /*             } */
+                /*             /// Exit the game */
+                /*             if (keysym.sym == SDLK_q) */
+                /*             { */
+                /*                 exit(0); */
+                /*             } */
+                /*             break; */
+                /*         case SDL_KEYUP: */
+                /*             if (keysym.sym == SDLK_SPACE) */
+                /*             { */
+                /*                 /// restart = 1; */
+                /*             } */
+                /*             break; */
+                /*         /\* case SDL_QUIT: *\/ */
+                /*         /\*     printf ("SDL_QUIT, exit the game\n"); *\/ */
+                /*         /\*     exit(0);                             *\/ */
+                            
+                /*     } */
+                /*     if (restart == 1) */
+                /*     { */
+                /*         SDL_PumpEvents(); */
+                /*         if(SDL_WaitEvent(&event) != 0); */
+                /*         break; */
+                /*     } */
+                /* } */
+                
                 /* while(SDL_WaitEvent(&event) != 0) */
                 /* { */
                 /*     SDL_keysym keysym; */
@@ -896,7 +947,9 @@ int main(int argc, char *argv[])
 	
     /* Hide the mouse pointer. */
     SDL_ShowCursor(0);
-
+    /* Ignore all mouse event */
+    SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+    
     /* Initialize the status display. */
     if (InitStatusDisplay() < 0) {
         printf("Unable to initialize status display.\n");
