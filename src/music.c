@@ -3,9 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef ENABLE_OPENAL
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>    /* alBufferAppendWriteData_LOKI is an extension. */
+#endif /* ENABLE_OPENAL */
+
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 
@@ -13,13 +17,14 @@
 #include "music.h"
 #include "resources.h"
 
-
+#ifdef ENABLE_OPENAL
 /* We'll set this flag to 1 after music has been successfully initialized. */
 int music_enabled = 0;
 
 /* We'll set this to 1 as soon as we start playback, and to 0 when there's
    no more data. */
 int music_playing = 0;
+
 
 /* OpenAL source and buffer for streaming music. */
 static ALuint music_source = 0;
@@ -244,3 +249,64 @@ void UpdateMusic()
 	}
     }
 }
+
+#else
+#include "SDL/SDL_mixer.h"
+/// Use SDL audio default
+Mix_Music * background_music = NULL;
+
+void InitMusic()
+{
+    printf ("Init music using SDL\n");
+    if (!audio_enabled)
+    {
+        printf("Unable to initialize music since audio isn't enabled.\n");
+        return;
+    }
+    
+};
+void CleanupMusic()
+{
+    Mix_FreeMusic(background_music);
+};
+int LoadMusic(char *filename)
+{
+    if ((background_music = Mix_LoadMUS(filename)) == NULL)
+    {
+        printf ("Unable to load music\n");
+        return -1;
+    }
+    return 0;
+};
+void StartMusic()
+{
+    if(Mix_PlayingMusic() == 0)
+    {
+        //Play the music
+        if(Mix_PlayMusic(background_music, -1) == -1)
+        {
+            printf ("Unable to play music!\n");
+        }
+    }
+};
+void StopMusic()
+{
+    //If the music is paused
+    if( Mix_PausedMusic() != 1 )
+    {
+        Mix_HaltMusic();        
+        /// Mix_PauseMusic();
+    }
+};
+void UpdateMusic()
+{
+    //If the music is paused
+    if( Mix_PausedMusic() == 1 )
+    {
+        //Resume the music
+        Mix_ResumeMusic();
+    }
+};
+
+#endif /* OPENAL_ENABLE */
+
