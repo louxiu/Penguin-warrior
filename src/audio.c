@@ -1,9 +1,11 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "SDL/SDL_mixer.h"
 #include "audio.h"
 #include "resources.h"
 
+#ifdef AUDIO_ENABLE
 /* Include the OpenAL headers. */
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -211,3 +213,61 @@ void StartOpponentPhaserSound()
         alSourcePlay(opponent_phaser_source);
     }
 }
+
+#else
+/* We'll set this flag to 1 after audio has been successfully initialized. */
+int audio_enabled = 0;
+Mix_Chunk *phaser = NULL;
+
+void InitAudio(void)
+{
+    //Initialize SDL_mixer
+    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
+    {
+        printf ("Init audio fail!\n");
+        return;
+    }
+    audio_enabled = 1;
+
+    //Load the fire sound effects
+    if ((phaser = Mix_LoadWAV( "phaser.wav" )) == NULL)
+    {
+        printf ("Load phaser.wav failed!\n");
+    }
+};
+
+void CleanupAudio(void)
+{
+    //Quit SDL_mixer
+    Mix_CloseAudio();
+    
+};
+
+void UpdateAudio(player_p player, player_p opponent){};
+
+void StartAudio(void){};
+
+void StopAudio(void){};
+
+void StartPlayerPhaserSound(void)
+{
+    if (audio_enabled) {
+        if( Mix_PlayChannel( -1, phaser, 0 ) == -1 )
+        {
+        }
+    }else
+    {
+        printf ("Phaser sound is not enable!\n");
+    }
+
+};
+void StartOpponentPhaserSound(void)
+{
+    /* if (audio_enabled) { */
+    /*     if( Mix_PlayChannel( -1, phaser, 0 ) == -1 ) */
+    /*     { */
+    /*     } */
+    /* } */
+};
+
+#endif /* AUDIO_ENABLE */
