@@ -8,7 +8,12 @@
 6. Add screen shot support. Pretty easy. (The image above got from it)
 7. Improved the random number generator
 
+2012年 9月 13日 木曜日 14:49:11 CST
+
 1.Add stop function
+
 2.Add sound effect via SDL_mixer
+
 3.Add openal audio support(The original is broken). Yeah!
+
 4.Add openal background sound support. Yeah!
