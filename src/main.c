@@ -344,7 +344,6 @@ static void KillPlayer()
     opponent.score++;
 }
 
-
 /* Cause damage to the opponent. */
 static void DamageOpponent()
 {
@@ -361,9 +360,13 @@ int UpdateMusicThread(void *arg)
 {
     /* Avoid compiler warning. */
     arg += 0;
-
+    UpdateMusic();
+    /* for (;;) { */
+    /*     UpdateMusic(); */
+    /*     SDL_Delay(10); */
+    /* } */
     for (;;) {
-        UpdateMusic();
+        /// UpdateMusic();
         SDL_Delay(10);
     }
 
@@ -411,8 +414,9 @@ static void PlayGame()
     StartMusic();
 
     /* Start the music update thread. */
-    music_update_thread = SDL_CreateThread(UpdateMusicThread, NULL);
-    if (music_update_thread == NULL) {
+    
+    if ((music_update_thread = SDL_CreateThread(UpdateMusicThread, NULL)) == NULL)
+    {
         printf("Unable to start music update thread.\n");
     }
     int go_on = 0;
@@ -488,7 +492,7 @@ static void PlayGame()
 				   of the respawn. */
                 local_player_respawn = 1;
 
-                SetStatusMessage("GOOD LUCK, WARRIOR!");
+                SetStatusMessage("GOOD LUCK, WARRIOR!!!");
             }
         }
 
@@ -557,7 +561,7 @@ static void PlayGame()
                     SDL_keysym keysym;
                     keysym = event.key.keysym;                        
                     //If the user has Xed out the window
-                    printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym));
+                    /// printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym));
                     if( keysym.sym == SDLK_SPACE)
                     {
                         go_on ++;
@@ -807,7 +811,6 @@ static void PlayGame()
     StopMusic();
 }
 
-
 int main(int argc, char *argv[])
 {
     enum { GAME_COMPUTER, GAME_NETWORK, GAME_UNKNOWN } game_type = GAME_UNKNOWN;
@@ -961,12 +964,12 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    
     /* Start the OpenAL-based audio system. */
     InitAudio();
 
     /* Initialize music and give the music system a file. */
     InitMusic();
+
     if (LoadMusic("reflux.ogg") < 0) {
         /* If that failed, don't worry about it. */
         printf("Unable to load reflux.ogg.\n");

@@ -1,0 +1,2 @@
+ffmpeg -i file.wav -f s16be -ar 8000 -acodec pcm_s16be file.raw
+ffmpeg -f s16be -ar 8000 -ac 1 -acodec pcm_s16be -i file.raw file.wav

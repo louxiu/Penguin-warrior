@@ -5,7 +5,8 @@
 #include "audio.h"
 #include "resources.h"
 
-#ifdef AUDIO_ENABLE
+#define OPENAL_ENABLE
+#ifdef OPENAL_ENABLE
 /* Include the OpenAL headers. */
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -50,15 +51,17 @@ void InitAudio()
        This is because error conditions are stored within contexts,
        and it's pretty meaningless to retrieve an error code from
        something that does not yet exist. */
-    audio_device = alcOpenDevice(NULL);
-    if (audio_device == NULL)
+
+    if ((audio_device = alcOpenDevice(NULL)) != NULL)
         fprintf(stderr, "Warning: NULL device.\n");
     else
         fprintf(stderr, "Got a device.\n");
+    
     audio_context = alcCreateContext(audio_device, NULL);
 
     err = alcGetError(audio_device);
-    if (err != ALC_NO_ERROR || audio_context == NULL) {
+    if (err != ALC_NO_ERROR || audio_context == NULL)
+    {
         fprintf(stderr, 
                 "Unable to create an OpenAL context (%s). Audio disabled.\n", 
                 alGetString(err));
@@ -72,7 +75,8 @@ void InitAudio()
        of all OpenAL API calls. Some calls will even segfault if there isn't
        a valid current context. */
     alcMakeContextCurrent(audio_context);
-    if (alcGetError(audio_device) != ALC_NO_ERROR) {
+    if (alcGetError(audio_device) != ALC_NO_ERROR)
+    {
         fprintf(stderr, 
                 "Unable to make OpenAL context current. Audio disabled.\n");
         audio_cleanup(audio_context);
@@ -181,7 +185,8 @@ void StartAudio()
     /* Activate the opponent's engine noise. We won't attach an engine noise
        to the player, because quite frankly it would be annoying, though perhaps
        a bit more realistic. */
-    if (audio_enabled) {
+    if (audio_enabled)
+    {
         alSourcei(player_phaser_source, AL_BUFFER, phaser_sound.name);
         alSourcei(opponent_phaser_source, AL_BUFFER, phaser_sound.name);
         alSourcei(opponent_engine_source, AL_BUFFER, engine_sound.name);
@@ -193,7 +198,8 @@ void StartAudio()
 void StopAudio()
 {
     /* Stop all sources. */
-    if (audio_enabled) {
+    if (audio_enabled)
+    {
         alSourceStop(opponent_engine_source);
         alSourceStop(opponent_phaser_source);
         alSourceStop(player_phaser_source);
@@ -202,14 +208,16 @@ void StopAudio()
 
 void StartPlayerPhaserSound()
 {
-    if (audio_enabled) {
+    if (audio_enabled)
+    {
         alSourcePlay(player_phaser_source);
     }
 }
 
 void StartOpponentPhaserSound()
 {
-    if (audio_enabled) {
+    if (audio_enabled)
+    {
         alSourcePlay(opponent_phaser_source);
     }
 }
@@ -270,4 +278,4 @@ void StartOpponentPhaserSound(void)
     /* } */
 };
 
-#endif /* AUDIO_ENABLE */
+#endif /* OPENAL_ENABLE */

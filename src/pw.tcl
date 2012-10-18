@@ -15,7 +15,8 @@ set state attack
 set target_x 0
 set target_y 0
 
-proc playComputer { } {
+proc playComputer {} 
+{
     global computer_x computer_y computer_angle computer_accel
     global player_x player_y player_angle player_accel
     global target_x target_y state
@@ -24,7 +25,8 @@ proc playComputer { } {
     global world_width world_height
     global player_forward_thrust player_reverse_thrust
 
-    if {[string equal $state attack]} {
+    if {[string equal $state attack]} 
+    {
         #
         # Code for the attack state
         #
@@ -35,7 +37,8 @@ proc playComputer { } {
 
         # If we're too close to the player, switch to evade.
         set distance [getDistanceToTarget]
-        if {$distance < 30} {
+        if {$distance < 30} 
+        {
             set state evade
 
             # Set an invalid target so the evade state will
@@ -46,38 +49,48 @@ proc playComputer { } {
         }
 
         # If we're far away, speed up. If we're close, lay off the throttle.
-        if {$distance > 100} {
+        if {$distance > 100} 
+        {
             set computer_accel $player_forward_thrust
-        } elseif {$distance > 50} {
+        } 
+        elseif {$distance > 50} 
+        {
             set computer_accel [expr {$player_forward_thrust/3}]
-        } else {
+        } 
+        else 
+        {
             set computer_accel 0
         }
 
         # If we're close enough to the player, fire away!
-        if {$distance < 200} {
+        if {$distance < 200} 
+        {
             fireWeapon
         }
 
-    } else {
+    } 
+    else 
+    {
         #
         # Code for the evade state
         #
 
         # Have we hit our target yet? (within a reasonable tolerance)
-        if {abs($target_x - $computer_x) < 10 && abs($target_y - $computer_y) < 10} {
-            puts "Going back into ATTACK mode."
+        if {abs($target_x - $computer_x) < 10 && abs($target_y - $computer_y) < 10} 
+        {
+            #puts "Going back into ATTACK mode."
             set state attack
             return
         }
 
         # Do we need to find a new target?
-        if {$target_x < 0} {
+        if {$target_x < 0} 
+        {
             # Select a random point in the world as our target.
             set target_x [expr {int(rand()*$world_width)}]
             set target_y [expr {int(rand()*$world_height)}]
 
-            puts "Selected new EVADE target."
+            #puts "Selected new EVADE target."
         }
 
         set computer_accel $player_forward_thrust
@@ -91,20 +104,25 @@ proc playComputer { } {
     # Figure out the quickest way to aim at our destination.
     set target_angle [getAngleToTarget]
     set arc [expr {$target_angle - $computer_angle}]
-    if {$arc < 0} {
+    if {$arc < 0} 
+    {
         set arc [expr {$arc + 360}]
     }
 
-    if {$arc < 180} {
+    if {$arc < 180} 
+    {
         set computer_angle [expr {$computer_angle + 3}]
-    } else {
+    } 
+    else 
+    {
         set computer_angle [expr {$computer_angle - 3}]
     }
 
 }
 
 # Returns the distance (in pixels) between the target coordinate and the opponent.
-proc getDistanceToTarget { } {
+proc getDistanceToTarget {} 
+{
     global computer_x computer_y target_x target_y
 
     set xdiff [expr {$computer_x - $target_x}]
@@ -115,17 +133,18 @@ proc getDistanceToTarget { } {
 
 # Returns the angle (in degrees) to the target coordinate from
 # the opponent. Uses basic trig (arctangent).
-proc getAngleToTarget { } {
+proc getAngleToTarget {} 
+{
     global computer_x computer_y target_x target_y
 
     set x [expr {$target_x - $computer_x}]
     set y [expr {$target_y - $computer_y}]
 
     set theta [expr {atan2(-$y,$x)}]
-    if {$theta < 0} {
+    if {$theta < 0} 
+    {
         set theta [expr {2*3.141592654 + $theta}]
     }
     
     return [expr {$theta * 180/3.141592654}]
 }
-

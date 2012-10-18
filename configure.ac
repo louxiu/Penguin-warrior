@@ -13,9 +13,15 @@ AC_SEARCH_LIBS([SDL_Init], [SDL], [], [AC_MSG_ERROR([SDL not found])])
 
 AC_SEARCH_LIBS([Tcl_CreateInterp], [tcl], [], [AC_MSG_ERROR([tcl not found])])
 
+AC_SEARCH_LIBS([scm_init_guile], [guile], [], [AC_MSG_ERROR([guile not found])])
+
 AC_SEARCH_LIBS([alcOpenDevice], [openal], [], [AC_MSG_ERROR([openal not found])])
 
+AC_SEARCH_LIBS([Mix_OpenAudio], [SDL_mixer], [], [AC_MSG_ERROR([mixer not found])])
+
 AC_SEARCH_LIBS([sf_open], [sndfile], [], [AC_MSG_ERROR([sndfile not found])])
+
+AC_SEARCH_LIBS([alutLoadWAVFile], [alut], [], [AC_MSG_ERROR([alut not found])])
 
 dnl Pay attention to the order vorbisfile, vorbis, ogg
 

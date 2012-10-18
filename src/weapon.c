@@ -295,23 +295,21 @@ int CheckPhaserHit(player_p source, player_p target)
 
     CalcPhaserBeamCoords(source, &x0, &y0, &x1, &y1);
 
-    v1x = x1-x0;
-    v1y = y1-y0;
+    v1x = x1 - x0;
+    v1y = y1 - y0;
     v2x = target->world_x - x0;
     v2y = target->world_y - y0;
 
     /* If the dot product is less than zero, the target is behind
        the source, so there cannot be a hit. */
-    if (v1x * v2x + v1y * v2y < 0)
-	return 0;
+    if (v1x * v2x + v1y * v2y < 0)return 0;
 
     px = v1x * (v1x * v2x + v1y * v2y) / (v1x * v1x + v1y * v1y);
     py = v1y * (v1x * v2x + v1y * v2y) / (v1x * v1x + v1y * v1y);
 
     dist = sqrt((v2x-px)*(v2x-px)+(v2y-py)*(v2y-py));
 
-    if (dist < 50)
-	return 1;
+    if (dist < 50)return 1;
 
     return 0;
 }

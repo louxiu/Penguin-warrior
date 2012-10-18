@@ -3555,6 +3555,65 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing scm_init_guile" >&5
+$as_echo_n "checking for library containing scm_init_guile... " >&6; }
+if ${ac_cv_search_scm_init_guile+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char scm_init_guile ();
+int
+main ()
+{
+return scm_init_guile ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' guile; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_scm_init_guile=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_scm_init_guile+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_scm_init_guile+:} false; then :
+
+else
+  ac_cv_search_scm_init_guile=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_scm_init_guile" >&5
+$as_echo "$ac_cv_search_scm_init_guile" >&6; }
+ac_res=$ac_cv_search_scm_init_guile
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  as_fn_error $? "guile not found" "$LINENO" 5
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing alcOpenDevice" >&5
 $as_echo_n "checking for library containing alcOpenDevice... " >&6; }
 if ${ac_cv_search_alcOpenDevice+:} false; then :
@@ -3614,6 +3673,65 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing Mix_OpenAudio" >&5
+$as_echo_n "checking for library containing Mix_OpenAudio... " >&6; }
+if ${ac_cv_search_Mix_OpenAudio+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char Mix_OpenAudio ();
+int
+main ()
+{
+return Mix_OpenAudio ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' SDL_mixer; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_Mix_OpenAudio=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_Mix_OpenAudio+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_Mix_OpenAudio+:} false; then :
+
+else
+  ac_cv_search_Mix_OpenAudio=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_Mix_OpenAudio" >&5
+$as_echo "$ac_cv_search_Mix_OpenAudio" >&6; }
+ac_res=$ac_cv_search_Mix_OpenAudio
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  as_fn_error $? "mixer not found" "$LINENO" 5
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing sf_open" >&5
 $as_echo_n "checking for library containing sf_open... " >&6; }
 if ${ac_cv_search_sf_open+:} false; then :
@@ -3670,6 +3788,65 @@ if test "$ac_res" != no; then :
 
 else
   as_fn_error $? "sndfile not found" "$LINENO" 5
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing alutLoadWAVFile" >&5
+$as_echo_n "checking for library containing alutLoadWAVFile... " >&6; }
+if ${ac_cv_search_alutLoadWAVFile+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char alutLoadWAVFile ();
+int
+main ()
+{
+return alutLoadWAVFile ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' alut; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_alutLoadWAVFile=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_alutLoadWAVFile+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_alutLoadWAVFile+:} false; then :
+
+else
+  ac_cv_search_alutLoadWAVFile=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_alutLoadWAVFile" >&5
+$as_echo "$ac_cv_search_alutLoadWAVFile" >&6; }
+ac_res=$ac_cv_search_alutLoadWAVFile
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  as_fn_error $? "alut not found" "$LINENO" 5
 fi
 
 

@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tcl.h>
 #include "scripting.h"
+
+extern player_t player, opponent;
+
+/// #define TCL_ENABLE
+#ifdef TCL_ENABLE
+
+#include <tcl.h>
 
 /* Our interpreter. This will be initialized by InitScripting. */
 static Tcl_Interp *interp = NULL;
 
 /* Prototype for the "fireWeapon" command handler. */
 static int HandleFireWeaponCmd(ClientData client_data, Tcl_Interp * interp,
-			       int objc, Tcl_Obj * CONST objv[]);
+                               int objc, Tcl_Obj * CONST objv[]);
 
 /* Ship data structures (from main.c). */
 extern player_t player, opponent;
@@ -17,7 +23,6 @@ extern player_t player, opponent;
 /* Phaser handling routines (from main.c). */
 void FirePhasers(player_p p);
 int CanPlayerFire(player_p p);
-
 
 /* Sets up a Tcl interpreter for the game. Adds commands to implement our
    scripting interface. */
@@ -27,37 +32,37 @@ void InitScripting(void)
     /* First, create an interpreter and make sure it's valid. */
     interp = Tcl_CreateInterp();
     if (interp == NULL) {
-	fprintf(stderr, "Unable to initialize Tcl.\n");
-	exit(EXIT_FAILURE);
+        fprintf(stderr, "Unable to initialize Tcl.\n");
+        exit(EXIT_FAILURE);
     }
 
     /* Add the "fireWeapon" command. */
     if (Tcl_CreateObjCommand(interp, "fireWeapon",
-			     HandleFireWeaponCmd, (ClientData) 0,
-			     NULL) == NULL) {
-	fprintf(stderr, "Error creating Tcl command.\n");
-	exit(EXIT_FAILURE);
+                             HandleFireWeaponCmd, (ClientData) 0,
+                             NULL) == NULL) {
+        fprintf(stderr, "Error creating Tcl command.\n");
+        exit(EXIT_FAILURE);
     }
 
     /* Link the important parts of our player data structures to global
        variables in Tcl. (Ignore the char * typecast; Tcl will treat the data
        as the requested type, in this case double.) */
     Tcl_LinkVar(interp, "player_x", (char *) &player.world_x,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "player_y", (char *) &player.world_y,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "player_angle", (char *) &player.angle,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "player_accel", (char *) &player.accel,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "computer_x", (char *) &opponent.world_x,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "computer_y", (char *) &opponent.world_y,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "computer_angle", (char *) &opponent.angle,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "computer_accel", (char *) &opponent.accel,
-		TCL_LINK_DOUBLE);
+                TCL_LINK_DOUBLE);
 
     /* Make the constants in gamedefs.h available to the script. The script
        should play by the game's rules, just like the human player.
@@ -65,20 +70,20 @@ void InitScripting(void)
        you can read about in the manpage. It simply sets a variable to a new
        value given by a Tcl_Obj structure. */
     Tcl_SetVar2Ex(interp, "world_width", NULL, Tcl_NewIntObj(WORLD_WIDTH),
-		  0);
+                  0);
     Tcl_SetVar2Ex(interp, "world_height", NULL,
-		  Tcl_NewIntObj(WORLD_HEIGHT), 0);
+                  Tcl_NewIntObj(WORLD_HEIGHT), 0);
     Tcl_SetVar2Ex(interp, "player_forward_thrust", NULL,
-		  Tcl_NewIntObj(PLAYER_FORWARD_THRUST), 0);
+                  Tcl_NewIntObj(PLAYER_FORWARD_THRUST), 0);
     Tcl_SetVar2Ex(interp, "player_reverse_thrust", NULL,
-		  Tcl_NewIntObj(PLAYER_REVERSE_THRUST), 0);
+                  Tcl_NewIntObj(PLAYER_REVERSE_THRUST), 0);
 }
 
 /* Cleans up after our scripting system. */
 void CleanupScripting(void)
 {
     if (interp != NULL) {
-	Tcl_DeleteInterp(interp);
+        Tcl_DeleteInterp(interp);
     }
 
 }
@@ -95,9 +100,9 @@ int LoadGameScript(char *filename)
 
     status = Tcl_EvalFile(interp, filename);
     if (status != TCL_OK) {
-	fprintf(stderr, "Error executing %s: %s\n", filename,
-		Tcl_GetStringResult(interp));
-	return -1;
+        fprintf(stderr, "Error executing %s: %s\n", filename,
+                Tcl_GetStringResult(interp));
+        return -1;
     }
 
     return 0;
@@ -105,7 +110,7 @@ int LoadGameScript(char *filename)
 
 /* Handles "fireWeapon" commands from the Tcl script. */
 static int HandleFireWeaponCmd(ClientData client_data, Tcl_Interp * interp,
-			       int objc, Tcl_Obj * CONST objv[])
+                               int objc, Tcl_Obj * CONST objv[])
 {
     /* Avoid compiler warnings. */
     objc += 0;
@@ -114,7 +119,7 @@ static int HandleFireWeaponCmd(ClientData client_data, Tcl_Interp * interp,
 
     /* Fire, but only if weapons are charged. */
     if (CanPlayerFire(&opponent)) {
-	FirePhasers(&opponent);
+        FirePhasers(&opponent);
     }
 	
     /* Return nothing (but make sure it's a valid nothing). */
@@ -154,3 +159,92 @@ int RunGameScript()
 
     return 0;
 }
+
+#else /* TCL_ENABLE */
+#include <libguile.h>
+
+SCM HandleFireWeaponCmd()
+{
+    if (CanPlayerFire(&opponent)) {
+        FirePhasers(&opponent);
+    }
+        return scm_from_int(0);
+}
+
+static Sint32 seed = 0;
+
+static void scheme_init_random()
+{
+    seed = time(NULL);
+    srand(seed);
+}
+
+SCM scheme_random()
+{
+    return scm_from_double(rand()/(RAND_MAX +1.0));
+}
+
+int LoadGameScript(char *filename)
+{
+    scm_init_guile();
+    scm_c_primitive_load ("opponent.scm");
+
+    return 0;
+}
+
+void InitScripting(void)
+{
+    scm_init_guile();
+    scm_c_primitive_load ("opponent.scm");
+
+    /// Global variables initialize
+    scm_c_define("world_width", scm_int2num(WORLD_WIDTH));
+	scm_c_define("world_height", scm_int2num(WORLD_HEIGHT));
+	scm_c_define("player_forward_thrust", scm_int2num(PLAYER_FORWARD_THRUST));
+	scm_c_define("player_reverse_thrust", scm_int2num(PLAYER_REVERSE_THRUST));
+
+    scheme_init_random();
+    scm_c_define_gsubr( "random", 0, 0, 0, scheme_random);    
+    scm_c_define_gsubr( "fireWeapon", 0, 0, 0, HandleFireWeaponCmd);
+}
+
+int RunGameScript()
+{
+    /// Update the variables in scheme script.
+    scm_c_define("player_x", scm_int2num(player.world_x));
+	scm_c_define("player_y", scm_int2num(player.world_y));
+	scm_c_define("player_angle", scm_int2num(player.angle));
+	scm_c_define("player_accel", scm_int2num(player.accel));
+
+    scm_c_define("computer_x", scm_int2num(opponent.world_x));
+	scm_c_define("computer_y", scm_int2num(opponent.world_y));
+	scm_c_define("computer_angle", scm_int2num(opponent.angle));
+	scm_c_define("computer_accel", scm_int2num(opponent.accel));
+
+    SCM display;    
+    display = scm_variable_ref(scm_c_lookup("display_vars"));
+    scm_call_0(display);
+    exit(0);
+    
+    SCM playComputer;    
+    playComputer = scm_variable_ref(scm_c_lookup("playComputer"));
+    scm_call_0(playComputer);
+    
+    if (opponent.accel > PLAYER_FORWARD_THRUST)
+        opponent.accel = PLAYER_FORWARD_THRUST;
+    if (opponent.accel < PLAYER_REVERSE_THRUST)
+        opponent.accel = PLAYER_REVERSE_THRUST;
+    while (opponent.angle >= 360)
+        opponent.angle -= 360;
+    while (opponent.angle < 0)
+        opponent.angle += 360;
+
+    return 0;
+}
+
+void CleanupScripting(void)
+{
+    /// Do not need in guile.
+}
+
+#endif 

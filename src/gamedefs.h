@@ -60,7 +60,7 @@
 #define PHASER_CHARGE_MAX               30
 
 /* Roughly the number of charge units per second. */
-#define PHASER_CHARGE_RATE              15
+#define PHASER_CHARGE_RATE              30
 
 /* Duration of each phaser shot, in ticks. (30 ticks/second) */ 
 #define PHASER_FIRE_TIME                5
@@ -77,22 +77,24 @@ extern double time_scale;
 typedef enum {WARRIOR, DEVIL} player_type;
 
 /* Data structure for player ships */
-typedef struct player_s {
+typedef struct player_s
+{
     player_type type;
-    double angle;		/* in clockwise degrees, 0 -> due east */
+    double angle;		    /* in clockwise degrees, 0 -> due east */
     double world_x,world_y;	/* coordinates in the world */
     int screen_x,screen_y;	/* onscreen coordinates */
     double velocity;    	/* velocity in pixels per frame */
-    double accel;		/* acceleration in pixels/frame^2 */
-    int shields;		/* shield strength left */
-    double firing;              /* phaser is currently active */
-    double charge;              /* phaser charge level */
-    int score;                  /* kill counter */
-    int hit;                    /* player hit, cause particle burst */
+    double accel;		    /* acceleration in pixels/frame^2 */
+    int shields;		    /* shield strength left */
+    double firing;          /* phaser is currently active */
+    double charge;          /* phaser charge level */
+    int score;              /* kill counter */
+    int hit;                /* player hit, cause particle burst */
 } player_t, *player_p;
 
 /* Data structure for audio resources */
-typedef struct sound_s {
+typedef struct sound_s
+{
     ALint format;           /* OpenAL format enum, such as AL_FORMAT_STEREO8. */
     ALuint size;            /* size, in bytes, of this buffer */
     ALfloat freq;           /* frequency */
