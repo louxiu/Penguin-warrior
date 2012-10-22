@@ -1,4 +1,5 @@
-[[https://github.com/coldnew/linum-ace/raw/master/screenshot/screenshot1.jpg]]  
+![ScreenShot](https://github.com/louxiu/Penguin-Warrior/raw/master/Resources/screenshot/screen.bmp)
+
 2012年 9月 10日 月曜日 12:45:02 CST
 
 1. Add a radar. Make the icon blink.
@@ -8,6 +9,8 @@
 5. Remove charging status bar at the bottom of the screen.
 6. Add screen shot support. Pretty easy. (The image above got from it)
 7. Improved the random number generator
+
+![ScreenShot](https://github.com/louxiu/Penguin-Warrior/raw/master/Resources/screenshot/screen1.bmp)
 
 2012年 9月 13日 木曜日 14:49:11 CST
 
