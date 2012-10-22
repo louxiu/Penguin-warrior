@@ -12,10 +12,7 @@ You can see the screenshots on my blog: http://louxiu.gnailuy.com/?p=610
 
 2012年 9月 13日 木曜日 14:49:11 CST
 
-1.Add stop function
-
-2.Add sound effect via SDL_mixer
-
-3.Add openal audio support(The original is broken). Yeah!
-
-4.Add openal background sound support. Yeah!
+1.Add stop function  
+2.Add sound effect via SDL_mixer  
+3.Add openal audio support(The original is broken). Yeah!  
+4.Add openal background sound support. Yeah!.  
