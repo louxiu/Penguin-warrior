@@ -1,5 +1,4 @@
-You can see the screenshots on my blog: http://louxiu.gnailuy.com/?p=610
-
+[[https://github.com/coldnew/linum-ace/raw/master/screenshot/screenshot1.jpg]]  
 2012年 9月 10日 月曜日 12:45:02 CST
 
 1. Add a radar. Make the icon blink.
