@@ -43,74 +43,73 @@
 
 ;; Returns the angle (in degrees) to the target coordinate from
 ;; the opponent. Uses basic trig (arctangent).
+;; equal to let* in scheme?
+(define theta 0)
 (define getAngleToTarget
   (lambda ()
-    (let (x (- target_x computer_x))
-      (y (- target_y computer_y))
-      (theta (atan (- y), x)))
-    (begin
-      (if (< theta 0)
-          (set! theta (+ (* 2 3.141592654) theta)))
-      (* theta (/ 180 3.141592654)))))
+    (let ((x (- target_x computer_x))
+          (y (- target_y computer_y)))
+      (set! theta (atan (- y) x))
+      (begin
+        (if (< theta 0)
+            (set! theta (+ (* 2 3.141592654) theta)))
+        (* theta (/ 180 3.141592654))))))
 
 ;; Returns the distance (in pixels) between the target coordinate and the opponent.
 (define getDistanceToTarget
   (lambda ()
-    (let (xdiff (- computer_x target_x))
-      (ydiff (- computer_y target_y)))
-    (sqrt (+ (* xdiff xdiff) (* ydiff ydiff)))))
+    (let ((xdiff (- computer_x target_x))
+          (ydiff (- computer_y target_y)))
+      (sqrt (+ (* xdiff xdiff) (* ydiff ydiff))))))
 
-;; (define playComputer
-;;   (let (distance (getDistanceToTarget))
-;;     (exit 0))
+;; should be local variable
+(define distance 0)
+(define target_angle 0)
+(define arc 0)
+(define playComputer
+  (begin
+    (if (= state attack)
+        (begin
+          (set! target_x player_x)
+          (set! target_y player_y)
+          (set! distance (getDistanceToTarget))
+
+          (if (< distance 30)
+              (begin
+                (set! state envade)                
+                (set! target_x -1))
+              (begin
+                (if (> distance 100)
+                    (set! computer_accel player_forward_thrust)
+                    (if (> distance 50)
+                        (set! computer_accel (/ player_forward_thrust 3))
+                        (set! computer_accel 0)))
+                (if (< distance 200)
+                    (fireWeapon))))
+        ;; Envade
+          (begin
+            (if (and (< (abs (- target_x computer_x)) 10)
+                     (< (abs (- target_y computer_y)) 10))
+                (begin
+                  (set! state attack))
+                (begin
+                  (if (< target_x 0)
+                      (begin
+                        (set! target_x (* random world_width))
+                        (set! target_y (* random world_height))))
+                  (set! computer_accel player_forward_thrust))))))
+
+    (begin
+      (set! target_angle (getAngleToTarget))
+      (set! arc (- target_angle computer_angle))
+
+      (if (< arc 0)
+          (set! arc (+ arc 360)))
+
+      (if (< arc 180)
+          (set! computer_angle (+ computer_angle 3))
+          (set! computer_angle (- computer_angle 3))))))
   
-;;   (begin
-;;     (if (= state attack)
-;;         (begin
-;;           (set! target_x player_x)
-;;           (set! target_y player_y)
-
-;;           (if (< distance 30)
-;;               (begin
-;;                 (set! target_x -1)
-;;                 (set! exit 1))
-
-;;               (begin
-;;                 (if (> distance 100)
-;;                     (set! computer_accel player_forward_thrust)
-;;                     (if (> distance 50)
-;;                         (set! computer_accel (/ player_forward_thrust 3))
-;;                         (set! computer_accel 0)))
-;;                 (if (< distance 200)
-;;                     (fireWeapon))))
-;;         ;; Envade
-;;         (begin
-;;           (if (and (< (abs (- target_x computer_x)) 10)
-;;                   (< (abs (- target_y computer_y)) 10))
-;;               (begin
-;;                 (set! state attack)
-;;                 (set! exit 1))
-
-;;               (begin
-;;                 (if (< target_x 0)
-;;                     (begin
-;;                       ;; Need to improve here
-;;                       (set! target_x (* random world_width))
-;;                       (set! target_y (* random world_height))))
-
-;;                 (set! computer_accel player_forward_thrust)))))
-;;     (if (= exit 0)
-;;         (begin
-;;           (let (target_angle (getAngleToTarget))
-;;             (arc (- target_angle computer_angle)))
-
-;;           (if (< arc 0)
-;;               (set! arc (+ arc 360)))
-
-;;           (if (< arc 180)
-;;               (set! computer_angle (+ computer_angle 3))
-;;               (set! computer_angle (- computer_angle 3)))))))
-
 (define display_vars
   (lambda ()
     (display "Variable:") (newline)  
@@ -119,6 +118,7 @@
     (display "player_forward_thrust ") (display player_forward_thrust) (newline)
     (display "player_reverse_thrust ") (display player_reverse_thrust) (newline)
 
+    (display "state ") (display state) (newline)    
     (display "player_x ") (display player_x) (newline)
     (display "player_y ") (display player_y) (newline)
     (display "player_angle ") (display player_angle) (newline)
