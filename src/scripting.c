@@ -47,6 +47,8 @@ void InitScripting(void)
     /* Link the important parts of our player data structures to global
        variables in Tcl. (Ignore the char * typecast; Tcl will treat the data
        as the requested type, in this case double.) */
+    Tcl_LinkVar(interp, "player_state", (char *) &player.state,
+                TCL_LINK_INT);
     Tcl_LinkVar(interp, "player_x", (char *) &player.world_x,
                 TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "player_y", (char *) &player.world_y,
@@ -55,6 +57,9 @@ void InitScripting(void)
                 TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "player_accel", (char *) &player.accel,
                 TCL_LINK_DOUBLE);
+
+    Tcl_LinkVar(interp, "computer_state", (char *) &opponent.state,
+                TCL_LINK_INT);
     Tcl_LinkVar(interp, "computer_x", (char *) &opponent.world_x,
                 TCL_LINK_DOUBLE);
     Tcl_LinkVar(interp, "computer_y", (char *) &opponent.world_y,

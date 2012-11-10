@@ -10,7 +10,7 @@
 8:Use mouse to control it instead of direction keys DONE
 9:Add random bonus point in field
 10:Add another AI warrior
-11:Split the laser
+11:Cut the laser to serval part and slow it down
 12:Draw boarders around the world
 13:Make the bottom status and top status adjust with the screen size DONE
 14:Make the radar. Point blinking. DONE
@@ -50,3 +50,6 @@
 46:Use ruby to rewrite the opponent AI again
 47:Add an end to the program. Who win?
 48:Background sound not work?
+49:Add level: Hard Normal Easy
+50:Two AI play with each other
+51:Add extra shield like MP in other game

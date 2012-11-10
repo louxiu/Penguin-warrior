@@ -7,6 +7,11 @@
 # world.
 
 # The name of our current state, attack or evade.
+# ENVADE, ATTACK, UNDER_ATTACK, INVINCIBLE
+set ENVADE 0
+set ATTACK 1
+set UNDER_ATTACK 2
+set INVINCIBLE 3
 set state attack
 
 # Coordinates to aim towards. In the attack state these will
@@ -16,10 +21,11 @@ set target_x 0
 set target_y 0
 
 proc playComputer { } {
-    global computer_x computer_y computer_angle computer_accel
-    global player_x player_y player_angle player_accel
-    global target_x target_y state
-
+    global computer_state computer_x computer_y computer_angle computer_accel
+    global player_state player_x player_y player_angle player_accel
+    global target_x target_y 
+    global state
+    
     # Global constants. These are initially set by InitScripting().
     global world_width world_height
     global player_forward_thrust player_reverse_thrust

@@ -68,6 +68,9 @@
 /* Time to delay before respawning, in ticks. */
 #define RESPAWN_TIME                    60
 
+/* Time the player is invincible, */
+#define INVINCIBLE_TIME                 300
+
 #define PI (3.141592654F)
 
 /* Our time scaling factor. This is defined in main.c, but
@@ -75,11 +78,13 @@
 extern double time_scale;
 
 typedef enum {WARRIOR, DEVIL} player_type;
+typedef enum {ENVADE, ATTACK, UNDER_ATTACK, INVINCIBLE, DEAD, DEADING} player_state;
 
 /* Data structure for player ships */
 typedef struct player_s
 {
     player_type type;
+    player_state state;
     double angle;		    /* in clockwise degrees, 0 -> due east */
     double world_x,world_y;	/* coordinates in the world */
     int screen_x,screen_y;	/* onscreen coordinates */

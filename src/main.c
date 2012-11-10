@@ -139,6 +139,7 @@ static void DrawPlayer(player_p p)
 /* Initializes the given player. */
 static void InitPlayer(player_p p, player_type type)
 {
+    p->state = ENVADE;
     p->type = type;
     p->world_x = getrandom() % WORLD_WIDTH;
     p->world_y = getrandom() % WORLD_HEIGHT;
@@ -163,13 +164,11 @@ static void UpdatePlayer(player_p p)
     SDL_LockMutex(player_mutex);
 
     p->velocity += p->accel * time_scale;
-    if (p->type == WARRIOR)
-    {
+    if (p->type == WARRIOR){
         if (p->velocity > PLAYER_MAX_VELOCITY) p->velocity = PLAYER_MAX_VELOCITY;
         if (p->velocity < PLAYER_MIN_VELOCITY) p->velocity = PLAYER_MIN_VELOCITY;
     }
-    else if (p->type == DEVIL)
-    {
+    else if (p->type == DEVIL){
         if (p->velocity > DEVIL_MAX_VELOCITY) p->velocity = DEVIL_MAX_VELOCITY;
         if (p->velocity < DEVIL_MIN_VELOCITY) p->velocity = DEVIL_MIN_VELOCITY; 
     }
@@ -341,6 +340,7 @@ static void KillPlayer()
     ShowShipExplosion(&player);
     player.velocity = 0;
     player.accel = 0;
+    player.state = DEAD;
     opponent.score++;
 }
 
@@ -400,6 +400,9 @@ static void PlayGame()
 
     /* respawn timer */
     int respawn_timer = -1;
+
+    /* invincible timer */
+    int invincible_timer = -1;    
 	
     prev_ticks = SDL_GetTicks();
 	
@@ -463,10 +466,12 @@ static void PlayGame()
             /* Has the local player been hit? */
             if (local_player_hit) {
                 local_player_hit--;
-                player.shields -= PHASER_DAMAGE;
-                ShowPhaserHit(&player);
-				/* No need to check for death, the
-				   other computer will tell us. */
+                if (player.state != INVINCIBLE){
+                    player.shields -= PHASER_DAMAGE;
+                    ShowPhaserHit(&player);
+                    /* No need to check for death, the
+                       other computer will tell us. */
+                }
             }
 		}
 
@@ -492,12 +497,29 @@ static void PlayGame()
 				   of the respawn. */
                 local_player_respawn = 1;
 
-                SetStatusMessage("GOOD LUCK, WARRIOR!!!");
+                SetStatusMessage("GOOD LUCK, WARRIOR!!");
+
+                /* Go to invincible state */
+                player.state = INVINCIBLE;
+                invincible_timer ++;
             }
         }
 
         /* Respond to input and network events, but not if we're in a respawn. */
         if (respawn_timer == -1) {
+
+            /* Small period of time invincible */
+            if (invincible_timer >= 0){
+                printf ("invincible state\n");
+                invincible_timer++;
+                if (invincible_timer >= ((double)INVINCIBLE_TIME / time_scale)) {
+                    invincible_timer = -1;
+                    /* Back to normal */
+                    player.state = ENVADE;
+                    printf ("normal state\n");                    
+                }
+            }
+            
             if (keystate[SDLK_q] || keystate[SDLK_ESCAPE]) quit = 1;
 			
             turn = 0;
@@ -723,14 +745,15 @@ static void PlayGame()
             /* Check for phaser hits against the player. */
             if (opponent.firing) {
                 if (CheckPhaserHit(&opponent,&player)) {
-					
-                    ShowPhaserHit(&player);
-                    player.shields -= PHASER_DAMAGE_DEVIL;
+					if (player.state != INVINCIBLE){
+                        ShowPhaserHit(&player);
+                        player.shields -= PHASER_DAMAGE_DEVIL;
 
-                    /* Did that destroy the player? */
-                    if (respawn_timer < 0 && player.shields <= 0) {
-                        KillPlayer();
-                        respawn_timer = 0;
+                        /* Did that destroy the player? */
+                        if (respawn_timer < 0 && player.shields <= 0) {
+                            KillPlayer();
+                            respawn_timer = 0;
+                        }
                     }
                 }
             }
@@ -777,13 +800,14 @@ static void PlayGame()
         if (!awaiting_respawn)
             DrawPlayer(&opponent);
         UpdateStatusDisplay(screen);
-        UpdateRadarDisplay(screen, player.world_x, player.world_y, opponent.world_x, opponent.world_y);
+        UpdateRadarDisplay(screen, player.world_x, player.world_y,
+                           opponent.world_x, opponent.world_y);
         
         /* Release the mutex so the networking system can get it.
            It doesn't stay unlocked for very long, but the networking
            system should still have plenty of time. */
         SDL_UnlockMutex(player_mutex);
-	
+
         /* Flip the page. */
         SDL_Flip(screen);
 
