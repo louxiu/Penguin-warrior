@@ -47,3 +47,6 @@
 43:Improve the icon blink, from dark to light animate. Bing
 44:When the game stop, add shadow effect.
 45:Make the radar rectangle. Inside make rectangle to indicate the sight of scope.
+46:Use ruby to rewrite the opponent AI again
+47:Add an end to the program. Who win?
+48:Background sound not work?
