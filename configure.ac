@@ -31,7 +31,7 @@ AC_SEARCH_LIBS([ov_open], [vorbis], [], [AC_MSG_ERROR([vorbis not found])])
 
 AC_SEARCH_LIBS([ov_open], [ogg], [], [AC_MSG_ERROR([ogg not found])])
 
-AC_SEARCH_LIBS([lua_pushboolean], [lua], [], [AC_MSG_ERROR([lua not found])])
+dnl AC_SEARCH_LIBS([lua_pushboolean], [lua], [], [AC_MSG_ERROR([lua not found])])
 
 AC_CONFIG_HEADERS([config.h])
 

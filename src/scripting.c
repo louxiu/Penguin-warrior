@@ -8,7 +8,7 @@ extern player_t player, opponent;
 #define TCL_ENABLE
 #ifdef TCL_ENABLE
 
-#include <tcl.h>
+#include <tcl/tcl.h>
 
 /* Our interpreter. This will be initialized by InitScripting. */
 static Tcl_Interp *interp = NULL;

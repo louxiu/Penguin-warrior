@@ -1,6 +1,6 @@
-CFLAGS=-W -Wall -ggdb `sdl-config --cflags`
+CFLAGS=-W -Wall -ggdb `sdl-config --cflags` 
 LIBS=-lm `sdl-config --libs` -ltcl -lopenal -lsndfile -lvorbisfile -lvorbis -logg
-OBJS=audio.o music.o main.o particle.o background.o resources.o scripting.o network.o weapon.o status.o
+OBJS=audio.o music.o main.o particle.o background.o resources.o scripting.o network.o weapon.o status.o radar.o
 CC=gcc
 
 
@@ -46,3 +46,5 @@ weapon.o: weapon.c weapon.h gamedefs.h
 status.o: status.c status.h gamedefs.h
 	gcc $(CFLAGS) -c status.c
 
+radar.o: radar.c radar.h gamedefs.h
+	gcc $(CFLAGS) -c radar.c
