@@ -64,8 +64,8 @@ SDL_Thread *music_update_thread = NULL;
    Prototypes
    ========== */
 
-static unsigned int getrandom();
-static void initrandom();
+static unsigned int GetRandom();
+static void InitRandom();
 static void DrawPlayer(player_p p);
 static void InitPlayer(player_p p, player_type type);
 static void UpdatePlayer(player_p p);
@@ -78,13 +78,13 @@ static void PlayGame();
    this one is consistent. */
 static Sint32 seed = 0;
 
-static void initrandom()
+static void InitRandom()
 {
     seed = time(NULL);
     srand(seed);
 }
 
-static unsigned int getrandom()
+static unsigned int GetRandom()
 {
     /* Sint32 p1 = 1103515245; */
     /* Sint32 p2 = 12345; */
@@ -102,7 +102,7 @@ static void DrawPlayer(player_p p)
 {
     SDL_Rect src, dest;
     int angle;
-	
+
     /* Calculate the player's new screen coordinates. */
     p->screen_x = (int)p->world_x - camera_x;
     p->screen_y = (int)p->world_y - camera_y;
@@ -111,11 +111,11 @@ static void DrawPlayer(player_p p)
     if (p->screen_x < -PLAYER_WIDTH/2 ||
         p->screen_x >= SCREEN_WIDTH+PLAYER_WIDTH/2)
         return;
-	
+
     if (p->screen_y < -PLAYER_HEIGHT/2 ||
         p->screen_y >= SCREEN_HEIGHT+PLAYER_HEIGHT/2)
         return;
-	
+
     /* Calculate drawing coordinates. */
     angle = p->angle;
     if (angle < 0) angle += 360;
@@ -127,7 +127,7 @@ static void DrawPlayer(player_p p)
     dest.y = p->screen_y - PLAYER_HEIGHT/2;
     dest.w = PLAYER_WIDTH;
     dest.h = PLAYER_HEIGHT;
-	
+
     /* Draw the sprite. */
     SDL_BlitSurface(ship_strip,&src,screen,&dest);
 }
@@ -141,8 +141,8 @@ static void InitPlayer(player_p p, player_type type)
 {
     p->state = ENVADE;
     p->type = type;
-    p->world_x = getrandom() % WORLD_WIDTH;
-    p->world_y = getrandom() % WORLD_HEIGHT;
+    p->world_x = GetRandom() % WORLD_WIDTH;
+    p->world_y = GetRandom() % WORLD_HEIGHT;
     p->accel = 0;
     p->velocity = 0;
     p->angle = 0;
@@ -158,9 +158,9 @@ static void InitPlayer(player_p p, player_type type)
 static void UpdatePlayer(player_p p)
 {
     float angle;
-	
+
     angle = (float)p->angle;
-	
+
     SDL_LockMutex(player_mutex);
 
     p->velocity += p->accel * time_scale;
@@ -170,12 +170,12 @@ static void UpdatePlayer(player_p p)
     }
     else if (p->type == DEVIL){
         if (p->velocity > DEVIL_MAX_VELOCITY) p->velocity = DEVIL_MAX_VELOCITY;
-        if (p->velocity < DEVIL_MIN_VELOCITY) p->velocity = DEVIL_MIN_VELOCITY; 
+        if (p->velocity < DEVIL_MIN_VELOCITY) p->velocity = DEVIL_MIN_VELOCITY;
     }
-	
+
     p->world_x += p->velocity * cos(angle*PI/180.0) * time_scale;
     p->world_y += p->velocity * -sin(angle*PI/180.0) * time_scale;
-				
+
     /* Make sure the player doesn't slide off the edge of the world. */
     if (p->world_x < 0) p->world_x = 0;
     if (p->world_x >= WORLD_WIDTH) p->world_x = WORLD_WIDTH-1;
@@ -200,7 +200,7 @@ static int UpdateNetworkPlayer()
     if (network_opponent_hit) {
         network_opponent_hit--;
         hit = 1;
-    } else  
+    } else
         hit = 0;
 
     CreateNetPacket(&outgoing, &player, hit,
@@ -225,7 +225,7 @@ static int UpdateNetworkPlayer()
     }
 
     /* Update our copy of the opponent's data. */
-    SDL_LockMutex(player_mutex);	
+    SDL_LockMutex(player_mutex);
     InterpretNetPacket(&incoming, &opponent.world_x, &opponent.world_y,
                        &opponent.angle, &opponent.velocity,
                        &firing, &hit, &dead, &respawn);
@@ -254,11 +254,11 @@ static int NetworkThread(void *arg)
             network_ok = 0;
             break;
         }
-		
+
         /* A slight speed brake. */
         SDL_Delay(10);
     }
-       
+
     return 0;
 }
 
@@ -276,7 +276,7 @@ void FirePhasers(player_p p)
     p->charge -= PHASER_CHARGE_FIRE;
     if (p->charge < 0) p->charge = 0;
     p->firing = PHASER_FIRE_TIME;
-    
+
     /* Play the appropriate sound. */
     if (p == &player)
 	    StartPlayerPhaserSound();
@@ -402,10 +402,10 @@ static void PlayGame()
     int respawn_timer = -1;
 
     /* invincible timer */
-    int invincible_timer = -1;    
-	
+    int invincible_timer = -1;
+
     prev_ticks = SDL_GetTicks();
-	
+
     start_time = time(NULL);
 
     /* Reset the score counters. */
@@ -417,13 +417,13 @@ static void PlayGame()
     StartMusic();
 
     /* Start the music update thread. */
-    
+
     if ((music_update_thread = SDL_CreateThread(UpdateMusicThread, NULL)) == NULL)
     {
         printf("Unable to start music update thread.\n");
     }
     int go_on = 0;
-    
+
     /* Start the game! */
     while ((quit == 0) && network_ok) {
 
@@ -437,19 +437,19 @@ static void PlayGame()
             time_scale = (double)(cur_ticks-prev_ticks)/30.0;
         }
         go_on = 0;
-        
+
         /* Update SDL's internal input state information. */
         SDL_PumpEvents();
-		
+
         /* Grab a snapshot of the keyboard. */
         keystate = SDL_GetKeyState(NULL);
 
         /* Grab a snapshot of the mouse. */
         /* SDL_GetMouseState(&mouse_x, &mouse_y); */
-        
+
         /* Lock the mutex so we can access the player's data. */
         SDL_LockMutex(player_mutex);
-		
+
         /* If this is a network game, take note of variables
            set by the network thread. These are handled differently
            for a scripted opponent. */
@@ -462,7 +462,7 @@ static void PlayGame()
                 network_opponent_respawn = 0;
                 awaiting_respawn = 0;
             }
-		
+
             /* Has the local player been hit? */
             if (local_player_hit) {
                 local_player_hit--;
@@ -510,22 +510,20 @@ static void PlayGame()
 
             /* Small period of time invincible */
             if (invincible_timer >= 0){
-                printf ("invincible state\n");
                 invincible_timer++;
                 if (invincible_timer >= ((double)INVINCIBLE_TIME / time_scale)) {
                     invincible_timer = -1;
                     /* Back to normal */
                     player.state = ENVADE;
-                    printf ("normal state\n");                    
                 }
             }
-            
+
             if (keystate[SDLK_q] || keystate[SDLK_ESCAPE]) quit = 1;
-			
+
             turn = 0;
 
             /// There is bug, it is not turn around according relative angle
-            
+
             /* /// Try mouse control first */
             /* double mouse_vector_x= mouse_x - player.screen_x; */
             /* double mouse_vector_y= mouse_y - player.screen_y; */
@@ -534,7 +532,7 @@ static void PlayGame()
 
             /* /// East direction is 0.  */
             /* mouse_angle = mod((int)(mouse_angle - 90), 360); */
-            
+
             /* /// printf ("mouse_angle = %f\n", mouse_angle); */
 
             /* double relative_abs_right = abs(mouse_angle - mod((int)(player.angle - 10), 360)); */
@@ -549,7 +547,7 @@ static void PlayGame()
             /* { */
             /*     turn += 10; */
             /* } */
-            
+
             /// There is no input from mouse
             /* Left and right arrow keys control turning. */
             if (turn == 0)
@@ -557,14 +555,14 @@ static void PlayGame()
                 if (keystate[SDLK_a]) turn += 10;
                 if (keystate[SDLK_d]) turn -= 10;
             }
-			
+
             /* Forward and back arrow keys activate thrusters. */
             player.accel = 0;
             if (keystate[SDLK_w]) player.accel = PLAYER_FORWARD_THRUST;
             if (keystate[SDLK_s]) player.accel = PLAYER_REVERSE_THRUST;
 
             /// Press space to stop the game
-            /// Weird needs to improve 
+            /// Weird needs to improve
             if (keystate[SDLK_SPACE])
             {
                 /* while(keystate[SDLK_SPACE]) */
@@ -581,7 +579,7 @@ static void PlayGame()
                 while( SDL_WaitEvent( &event ) )
                 {
                     SDL_keysym keysym;
-                    keysym = event.key.keysym;                        
+                    keysym = event.key.keysym;
                     //If the user has Xed out the window
                     /// printf ("The key name is %s\n", SDL_GetKeyName(keysym.sym));
                     if( keysym.sym == SDLK_SPACE)
@@ -590,7 +588,7 @@ static void PlayGame()
                     }
                     if (go_on == 4)
                     {
-                        prev_ticks = SDL_GetTicks();                        
+                        prev_ticks = SDL_GetTicks();
                         break;
                     }
                 }
@@ -643,7 +641,7 @@ static void PlayGame()
                 /*         /\* case SDL_QUIT: *\/ */
                 /*         /\*     printf ("SDL_QUIT, exit the game\n"); *\/ */
                 /*         /\*     exit(0);                             *\/ */
-                            
+
                 /*     } */
                 /*     if (restart == 1) */
                 /*     { */
@@ -652,7 +650,7 @@ static void PlayGame()
                 /*         break; */
                 /*     } */
                 /* } */
-                
+
                 /* while(SDL_WaitEvent(&event) != 0) */
                 /* { */
                 /*     SDL_keysym keysym; */
@@ -712,7 +710,7 @@ static void PlayGame()
                     }
                 }
             }
-			
+
             /* Turn. */
             player.angle += turn * time_scale;
             if (player.angle < 0) player.angle += 360;
@@ -726,10 +724,10 @@ static void PlayGame()
             {
                 printf("Local player has been destroyed.\n");
                 local_player_dead = 0;
-				
+
                 /* Kaboom! */
                 KillPlayer();
-				
+
                 /* Respawn. */
                 respawn_timer = 0;
             }
@@ -741,7 +739,7 @@ static void PlayGame()
                 fprintf(stderr, "Ending game due to script error.\n");
                 quit = 1;
             }
-			
+
             /* Check for phaser hits against the player. */
             if (opponent.firing) {
                 if (CheckPhaserHit(&opponent,&player)) {
@@ -772,7 +770,7 @@ static void PlayGame()
         /* Make the camera follow the player (but impose limits). */
         camera_x = player.world_x - SCREEN_WIDTH/2;
         camera_y = player.world_y - SCREEN_HEIGHT/2;
-		
+
         if (camera_x < 0) camera_x = 0;
         if (camera_x >= WORLD_WIDTH-SCREEN_WIDTH)
             camera_x = WORLD_WIDTH-SCREEN_WIDTH-1;
@@ -785,7 +783,7 @@ static void PlayGame()
 
         /* Keep OpenAL happy. */
         UpdateAudio(&player, &opponent);
-				
+
         /* Redraw everything. */
         DrawBackground(screen, camera_x, camera_y);
         DrawParallax(screen, camera_x, camera_y);
@@ -802,7 +800,7 @@ static void PlayGame()
         UpdateStatusDisplay(screen);
         UpdateRadarDisplay(screen, player.world_x, player.world_y,
                            opponent.world_x, opponent.world_y);
-        
+
         /* Release the mutex so the networking system can get it.
            It doesn't stay unlocked for very long, but the networking
            system should still have plenty of time. */
@@ -829,7 +827,7 @@ static void PlayGame()
         SDL_KillThread(music_update_thread);
         music_update_thread = NULL;
     }
-	
+
     /* Stop audio playback. */
     StopAudio();
     StopMusic();
@@ -838,11 +836,11 @@ static void PlayGame()
 int main(int argc, char *argv[])
 {
     enum { GAME_COMPUTER, GAME_NETWORK, GAME_UNKNOWN } game_type = GAME_UNKNOWN;
-    
+
     char *remote_address = NULL;
     int remote_port;
     int i;
-	
+
     if (argc < 2) {
         printf("Penguin Warrior\n");
         printf("Usage: pw [ mode ] [ option ... ]\n");
@@ -857,7 +855,7 @@ int main(int argc, char *argv[])
         printf("  The display options default to a windowed, software buffer.\n");
         exit(EXIT_FAILURE);
     }
-    
+
     /* Process command line arguments. There are plenty of libraries for command
        line processing, but our needs are simple in this case. */
     for (i = 0; i < argc; i++) {
@@ -887,7 +885,7 @@ int main(int argc, char *argv[])
             }
             remote_port = atoi(argv[i]);
             continue;
-			
+
             /* Display-related options */
         } else if (!strcmp(argv[i], "--hwsurface")) {
             hwsurface = 1;
@@ -932,9 +930,9 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
 
     }
-	
+
     /* Initialize our random number generator. */
-    initrandom();
+    InitRandom();
 
     /* Create a mutex to protect the player data. */
     player_mutex = SDL_CreateMutex();
@@ -945,7 +943,7 @@ int main(int argc, char *argv[])
 
     /* Start our scripting engine. */
     InitScripting();
-    if (LoadGameScript("pw.tcl") != 0) {
+    if (LoadGameScript() != 0) {
         fprintf(stderr, "Exiting due to script error.\n");
         exit(EXIT_FAILURE);
     }
@@ -956,7 +954,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     atexit(SDL_Quit);
-	
+
     /* Set an appropriate 16-bit video mode. */
     if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16,
                          (hwsurface ? SDL_HWSURFACE : SDL_SWSURFACE) |
@@ -965,18 +963,18 @@ int main(int argc, char *argv[])
         printf("Unable to set video mode: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
     }
-	
+
     /* Save the screen pointer for later use. */
     screen = SDL_GetVideoSurface();
-	
+
     /* Set the window caption to the name of the game. */
     SDL_WM_SetCaption("Penguin Warrior", "Penguin Warrior");
-	
+
     /* Hide the mouse pointer. */
     SDL_ShowCursor(0);
     /* Ignore all mouse event */
     SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
-    
+
     /* Initialize the status display. */
     if (InitStatusDisplay() < 0) {
         printf("Unable to initialize status display.\n");
@@ -1014,7 +1012,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
-	
+
     /* Play! */
     InitPlayer(&player, WARRIOR);
     InitPlayer(&opponent, DEVIL);
@@ -1031,7 +1029,7 @@ int main(int argc, char *argv[])
 
     /* Unhide the mouse pointer. */
     SDL_ShowCursor(1);
-	
+
     /* Clean up the status display. */
     CleanupStatusDisplay();
 
@@ -1040,7 +1038,7 @@ int main(int argc, char *argv[])
 
     /* Unload data. */
     UnloadGameData();
-	
+
     /* Shut down our scripting engine. */
     CleanupScripting();
 

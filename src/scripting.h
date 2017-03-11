@@ -5,7 +5,7 @@
 
 void InitScripting(void);
 void CleanupScripting(void);
-int LoadGameScript(char *filename);
+int LoadGameScript();
 int RunGameScript(void);
 
 #endif

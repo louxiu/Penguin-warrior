@@ -19,13 +19,13 @@ set state attack
 # will be set to random values.
 set target_x 0
 set target_y 0
-
+# TODO: rename computer to opponent
 proc playComputer { } {
     global computer_state computer_x computer_y computer_angle computer_accel
     global player_state player_x player_y player_angle player_accel
-    global target_x target_y 
+    global target_x target_y
     global state
-    
+
     # Global constants. These are initially set by InitScripting().
     global world_width world_height
     global player_forward_thrust player_reverse_thrust
@@ -131,7 +131,6 @@ proc getAngleToTarget { } {
     if {$theta < 0} {
 	set theta [expr {2*3.141592654 + $theta}]
     }
-    
+
     return [expr {$theta * 180/3.141592654}]
 }
-

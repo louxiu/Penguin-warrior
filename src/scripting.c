@@ -5,7 +5,10 @@
 
 extern player_t player, opponent;
 
-#define TCL_ENABLE
+void FirePhasers(player_p p);
+int CanPlayerFire(player_p p);
+
+/* #define TCL_ENABLE */
 #ifdef TCL_ENABLE
 
 #include <tcl/tcl.h>
@@ -16,13 +19,6 @@ static Tcl_Interp *interp = NULL;
 /* Prototype for the "fireWeapon" command handler. */
 static int HandleFireWeaponCmd(ClientData client_data, Tcl_Interp * interp,
                                int objc, Tcl_Obj * CONST objv[]);
-
-/* Ship data structures (from main.c). */
-extern player_t player, opponent;
-
-/* Phaser handling routines (from main.c). */
-void FirePhasers(player_p p);
-int CanPlayerFire(player_p p);
 
 /* Sets up a Tcl interpreter for the game. Adds commands to implement our
    scripting interface. */
@@ -99,11 +95,11 @@ void CleanupScripting(void)
    We'll use this to preload the procedures in the script. The interpreter's
    state is maintained after Tcl_EvalFile. We will NOT call Tcl_EvalFile after
    each frame - that would be hideously slow. */
-int LoadGameScript(char *filename)
+int LoadGameScript()
 {
     int status;
 
-    status = Tcl_EvalFile(interp, filename);
+    status = Tcl_EvalFile(interp, "pw.tcl");
     if (status != TCL_OK) {
         fprintf(stderr, "Error executing %s: %s\n", filename,
                 Tcl_GetStringResult(interp));
@@ -126,7 +122,7 @@ static int HandleFireWeaponCmd(ClientData client_data, Tcl_Interp * interp,
     if (CanPlayerFire(&opponent)) {
         FirePhasers(&opponent);
     }
-	
+
     /* Return nothing (but make sure it's a valid nothing). */
     Tcl_ResetResult(interp);
 
@@ -168,6 +164,7 @@ int RunGameScript()
 #else /* TCL_ENABLE */
 #include <libguile.h>
 
+/* TODO: use scm moudle and split scm script */
 /* ERROR: In procedure apply: */
 /* ERROR: Wrong type argument in position 1: #<unspecified> */
 /* Try lua */
@@ -181,160 +178,117 @@ SCM HandleFireWeaponCmd()
 
 static Sint32 seed = 0;
 
-static void scheme_init_random()
+static void SchemeInitRandom()
 {
     seed = time(NULL);
     srand(seed);
 }
 
-SCM scheme_random()
+SCM SchemeRandom()
 {
     return scm_from_double(rand()/(RAND_MAX +1.0));
 }
 
-int LoadGameScript(char *filename)
+int LoadGameScript()
 {
-    scm_init_guile();
-    scm_c_primitive_load ("opponent.scm");
-
+    /* TODO: script name as constant */
     return 0;
 }
 
-SCM current_module;
-void InitScripting(void)
-{
-    scm_init_guile();
-    /* current_module = scm_c_define_module("test", NULL, NULL); */
-    /* scm_c_use_module("test"); */
-    /* current_module = scm_current_module(); */
-    scm_c_primitive_load ("opponent.scm");
-    
-    /// Global variables initialize
-    /* scm_c_define("world_width", scm_int2num(WORLD_WIDTH)); */
-	/* scm_c_define("world_height", scm_int2num(WORLD_HEIGHT)); */
-	/* scm_c_define("player_forward_thrust", scm_int2num(PLAYER_FORWARD_THRUST)); */
-	/* scm_c_define("player_reverse_thrust", scm_int2num(PLAYER_REVERSE_THRUST)); */
+SCM player_x_scm;
+SCM player_y_scm;
+SCM player_angle_scm;
+SCM player_accel_scm;
 
-    /* scheme_init_random(); */
-    /* scm_c_define_gsubr( "random", 0, 0, 0, scheme_random);     */
-    /* scm_c_define_gsubr( "fireWeapon", 0, 0, 0, HandleFireWeaponCmd); */
+SCM opponent_x_scm;
+SCM opponent_y_scm;
+SCM opponent_angle_scm;
+SCM opponent_accel_scm;
+
+SCM playOpponent;
+
+void InitScripting()
+{
+    // TODO: move to LoadGameScript
+    scm_init_guile();
+    scm_c_primitive_load ("opponent.scm");
+
+    /* Global variables initialize */
+    SCM world_width_scm = scm_c_lookup( "world_width" ) ;
+    scm_variable_set_x(world_width_scm, scm_int2num(WORLD_WIDTH));
+
+    SCM world_height_scm = scm_c_lookup( "world_height" ) ;
+    scm_variable_set_x(world_height_scm, scm_int2num(WORLD_HEIGHT));
+
+    SCM player_forward_thrust_scm = scm_c_lookup( "player_forward_thrust" ) ;
+    scm_variable_set_x(player_forward_thrust_scm, scm_int2num(PLAYER_FORWARD_THRUST));
+
+    SCM player_reverse_thrust_scm = scm_c_lookup( "player_reverse_thrust" ) ;
+    scm_variable_set_x(player_reverse_thrust_scm, scm_int2num(PLAYER_REVERSE_THRUST));
+
+    /* TODO: use func or loop to init player and opponnent */
+    /* player */
+    player_x_scm = scm_c_lookup( "player_x" ) ;
+    player_y_scm = scm_c_lookup( "player_y" ) ;
+    player_angle_scm = scm_c_lookup( "player_angle" ) ;
+    player_accel_scm = scm_c_lookup( "player_accel" ) ;
+
+    /* opponent */
+    opponent_x_scm = scm_c_lookup( "opponent_x" ) ;
+    opponent_y_scm = scm_c_lookup( "opponent_y" ) ;
+    opponent_angle_scm = scm_c_lookup( "opponent_angle" ) ;
+    opponent_accel_scm = scm_c_lookup( "opponent_accel" ) ;
+
+    /* TODO: rename function */
+    playOpponent = scm_variable_ref(scm_c_lookup("playOpponent"));
+
+    SchemeInitRandom();
+    /* TODO: rename */
+    scm_c_define_gsubr( "random", 0, 0, 0, SchemeRandom);
+    scm_c_define_gsubr( "fireWeapon", 0, 0, 0, HandleFireWeaponCmd);
 }
-/* start state is attack 0
- * state evade 1*/
-int state = 0;
+
 int RunGameScript()
 {
-    /* scm_c_use_module("test"); */
-    /// scm_set_current_module(current_module);
-
-    /* confused with guile's module and level.
-     * This is just a ad-hoc. Needs to change here */
-    
-    /// Global variables initialize
-    scm_c_define("world_width", scm_int2num(WORLD_WIDTH));
-	scm_c_define("world_height", scm_int2num(WORLD_HEIGHT));
-	scm_c_define("player_forward_thrust", scm_int2num(PLAYER_FORWARD_THRUST));
-	scm_c_define("player_reverse_thrust", scm_int2num(PLAYER_REVERSE_THRUST));
-
-    scheme_init_random();
-    scm_c_define_gsubr("random", 0, 0, 0, scheme_random);    
-    scm_c_define_gsubr("fireWeapon", 0, 0, 0, HandleFireWeaponCmd);
-    
     /// Update the variables in scheme script.
-    scm_c_define("state", scm_int2num(state));    
-    scm_c_define("player_x", scm_double2num(player.world_x));
-	scm_c_define("player_y", scm_double2num(player.world_y));
-	scm_c_define("player_angle", scm_double2num(player.angle));
-	scm_c_define("player_accel", scm_double2num(player.accel));
+    scm_variable_set_x(player_x_scm, scm_int2num(player.world_x));
+    scm_variable_set_x(player_y_scm, scm_int2num(player.world_y));
+    scm_variable_set_x(player_angle_scm, scm_int2num(player.angle));
+    scm_variable_set_x(player_accel_scm, scm_int2num(player.accel));
 
-    scm_c_define("computer_x", scm_double2num(opponent.world_x));
-	scm_c_define("computer_y", scm_double2num(opponent.world_y));
-	scm_c_define("computer_angle", scm_double2num(opponent.angle));
-	scm_c_define("computer_accel", scm_double2num(opponent.accel));
+    scm_variable_set_x(opponent_x_scm, scm_int2num(opponent.world_x));
+    scm_variable_set_x(opponent_y_scm, scm_int2num(opponent.world_y));
+    scm_variable_set_x(opponent_angle_scm, scm_int2num(opponent.angle));
+    scm_variable_set_x(opponent_accel_scm, scm_int2num(opponent.accel));
 
-    /// For test
-    SCM display = scm_variable_ref(scm_c_lookup("display_vars"));
-    scm_call_0(display);
+    scm_call_0(playOpponent);
 
-    /// Get back all variables    
-    SCM s_symbol, s_value;
-    s_symbol = scm_c_lookup("state");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-        state = scm_num2int (s_value, 0, "state");
-        printf ("state = %d\n", state);
-    }
-    s_symbol = scm_c_lookup("player_x");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         player.world_x = scm_num2double (s_value, 0, "player_x");
-        printf ("player_x = %.1f\n", player.world_x);
-    }
-    s_symbol = scm_c_lookup("player_y");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         player.world_y = scm_num2double (s_value, 0, "player_y");
-        printf ("player_y = %.1f\n", player.world_y);
-    }
-    s_symbol = scm_c_lookup("player_angle");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         player.angle = scm_num2double (s_value, 0, "player_angle");
-        printf ("player_angle = %.1f\n", player.angle);
-    }
-    s_symbol = scm_c_lookup("player_accel");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         player.accel = scm_num2double (s_value, 0, "player_accel");
-        printf ("player_accel = %.1f\n", player.accel);
-    }
+    /* TODO: Guile's deprecation warnings */
+    /* update opponent accel and angle */
+    opponent.angle= scm_num2int(scm_variable_ref(opponent_angle_scm), 0, NULL);
+    opponent.accel= scm_num2int(scm_variable_ref(opponent_accel_scm), 0, NULL);
 
-    s_symbol = scm_c_lookup("computer_x");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         opponent.world_x = scm_num2double (s_value, 0, "computer_x");
-        printf ("computer_x = %.1f\n", opponent.world_x);
-    }
-    s_symbol = scm_c_lookup("computer_y");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         opponent.world_y = scm_num2double (s_value, 0, "computer_y");
-        printf ("computer_y = %.1f\n", opponent.world_y);
-    }
-    s_symbol = scm_c_lookup("computer_angle");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         opponent.angle = scm_num2double (s_value, 0, "computer_angle");
-        printf ("computer_angle = %.1f\n", opponent.angle);
-    }
-    s_symbol = scm_c_lookup("computer_accel");
-    s_value = scm_variable_ref(s_symbol);
-    if (SCM_NUMBERP(s_value)) {
-         opponent.accel = scm_num2double (s_value, 0, "computer_accel");
-        printf ("computer_accel = %.1f\n", opponent.accel);
-    }    
-    
-    /// exit(0);
-    
-    SCM playComputer;    
-    playComputer = scm_variable_ref(scm_c_lookup("playComputer"));
-    scm_call_0(playComputer);
-    
-    if (opponent.accel > PLAYER_FORWARD_THRUST)
+    if (opponent.accel > PLAYER_FORWARD_THRUST){
         opponent.accel = PLAYER_FORWARD_THRUST;
-    if (opponent.accel < PLAYER_REVERSE_THRUST)
+    }
+    if (opponent.accel < PLAYER_REVERSE_THRUST){
         opponent.accel = PLAYER_REVERSE_THRUST;
-    while (opponent.angle >= 360)
+    }
+
+    /* TODO: keep angle ok */
+    while (opponent.angle >= 360){
         opponent.angle -= 360;
-    while (opponent.angle < 0)
+    }
+    while (opponent.angle < 0){
         opponent.angle += 360;
+    }
 
     return 0;
 }
 
-void CleanupScripting(void)
+void CleanupScripting()
 {
-    /// Do not need in guile.
+    // TODO: Do not need in guile?
 }
 
-#endif 
+#endif

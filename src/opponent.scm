@@ -12,7 +12,9 @@
 (define world_height 0)
 
 ;; No random function in scm.
-(define random 1)
+;; define in c
+;; (define random 1)
+;; (define fireWeapon 1)
 
 (define player_forward_thrust 0)
 (define player_reverse_thrust 0)
@@ -24,16 +26,15 @@
 (define target_x 0)
 (define target_y 0)
 
-;; Use const
-(define attack 0)
-(define envade 1)
-(define state attack)
+(define ATTACK 0)
+(define ENVADE 1)
+(define state ATTACK)
 
 ;; The state of the opponent.
-(define computer_x 0)
-(define computer_y 0)
-(define computer_angle 0)
-(define computer_accel 0)
+(define opponent_x 0)
+(define opponent_y 0)
+(define opponent_angle 0)
+(define opponent_accel 0)
 
 ;; The state of the player.
 (define player_x 0)
@@ -43,13 +44,11 @@
 
 ;; Returns the angle (in degrees) to the target coordinate from
 ;; the opponent. Uses basic trig (arctangent).
-;; equal to let* in scheme?
-(define theta 0)
 (define getAngleToTarget
   (lambda ()
-    (let ((x (- target_x computer_x))
-          (y (- target_y computer_y)))
-      (set! theta (atan (- y) x))
+    (let* ((x (- target_x opponent_x))
+           (y (- target_y opponent_y))
+           (theta (atan (- y) x)))
       (begin
         (if (< theta 0)
             (set! theta (+ (* 2 3.141592654) theta)))
@@ -58,73 +57,50 @@
 ;; Returns the distance (in pixels) between the target coordinate and the opponent.
 (define getDistanceToTarget
   (lambda ()
-    (let ((xdiff (- computer_x target_x))
-          (ydiff (- computer_y target_y)))
+    (let ((xdiff (- opponent_x target_x))
+          (ydiff (- opponent_y target_y)))
       (sqrt (+ (* xdiff xdiff) (* ydiff ydiff))))))
 
-;; should be local variable
-(define distance 0)
-(define target_angle 0)
-(define arc 0)
-(define playComputer
-  (begin
-    (if (= state attack)
-        (begin
-          (set! target_x player_x)
-          (set! target_y player_y)
-          (set! distance (getDistanceToTarget))
-
-          (if (< distance 30)
-              (begin
-                (set! state envade)                
-                (set! target_x -1))
-              (begin
-                (if (> distance 100)
-                    (set! computer_accel player_forward_thrust)
-                    (if (> distance 50)
-                        (set! computer_accel (/ player_forward_thrust 3))
-                        (set! computer_accel 0)))
-                (if (< distance 200)
-                    (fireWeapon))))
-        ;; Envade
-          (begin
-            (if (and (< (abs (- target_x computer_x)) 10)
-                     (< (abs (- target_y computer_y)) 10))
-                (begin
-                  (set! state attack))
-                (begin
-                  (if (< target_x 0)
-                      (begin
-                        (set! target_x (* random world_width))
-                        (set! target_y (* random world_height))))
-                  (set! computer_accel player_forward_thrust))))))
-
-    (begin
-      (set! target_angle (getAngleToTarget))
-      (set! arc (- target_angle computer_angle))
-
-      (if (< arc 0)
-          (set! arc (+ arc 360)))
-
-      (if (< arc 180)
-          (set! computer_angle (+ computer_angle 3))
-          (set! computer_angle (- computer_angle 3))))))
-  
-(define display_vars
+(define playOpponent
   (lambda ()
-    (display "Variable:") (newline)  
-    (display "world_width ") (display world_width) (newline)
-    (display "world_height ") (display world_height) (newline)
-    (display "player_forward_thrust ") (display player_forward_thrust) (newline)
-    (display "player_reverse_thrust ") (display player_reverse_thrust) (newline)
+    (begin
+      (if (= state ATTACK)
+          (let ((distance 0))
+            (set! target_x player_x)
+            (set! target_y player_y)
+            (set! distance (getDistanceToTarget))
 
-    (display "state ") (display state) (newline)    
-    (display "player_x ") (display player_x) (newline)
-    (display "player_y ") (display player_y) (newline)
-    (display "player_angle ") (display player_angle) (newline)
-    (display "player_accel ") (display player_accel) (newline)
+            (if (< distance 30)
+                (begin
+                  (set! state ENVADE)
+                  (set! target_x -1))
+                (begin
+                  (if (> distance 100)
+                      (set! opponent_accel player_forward_thrust)
+                      (if (> distance 50)
+                          (set! opponent_accel (/ player_forward_thrust 3))
+                          (set! opponent_accel 0)))
+                  (if (< distance 200)
+                      (fireWeapon)))))
+            ;; ENVADE
+            (begin
+              (if (and (< (abs (- target_x opponent_x)) 10)
+                       (< (abs (- target_y opponent_y)) 10))
+                  (begin
+                    (set! state ATTACK))
+                  (begin
+                    (if (< target_x 0)
+                        (begin
+                          (set! target_x (* (random) world_width))
+                          (set! target_y (* (random) world_height))))
+                    (set! opponent_accel player_forward_thrust)))))
 
-    (display "computer_x ") (display computer_x) (newline)
-    (display "computer_y ") (display computer_y) (newline)
-    (display "computer_angle ") (display computer_angle) (newline)
-    (display "computer_accel ") (display computer_accel) (newline)))
+      (let* ((target_angle (getAngleToTarget))
+            (arc (- target_angle opponent_angle)))
+
+        (if (< arc 0)
+            (set! arc (+ arc 360)))
+
+        (if (< arc 180)
+            (set! opponent_angle (+ opponent_angle 3))
+            (set! opponent_angle (- opponent_angle 3)))))))

@@ -12,14 +12,15 @@ static int back_tiles[PARALLAX_GRID_WIDTH][PARALLAX_GRID_HEIGHT];
    included with the C library. Its quality varies between implementations,
    and it's easy to run into patterns within the generated numbers. At least
    this one is somewhat consistent. */
+/* TODO: move random tool script.c to utils */
 static Sint32 seed = 0;
 
-static void initrandom()
+static void InitRandom()
 {
     seed = time(NULL);
 }
 
-static unsigned int getrandom()
+static unsigned int GetRandom()
 {
     Sint32 p1 = 1103515245;
     Sint32 p2 = 12345;
@@ -32,12 +33,12 @@ static unsigned int getrandom()
 void InitBackground()
 {
     int x,y;
-		
-    initrandom();
+
+    InitRandom();
     for (x = 0; x < PARALLAX_GRID_WIDTH; x++) {
         for (y = 0; y < PARALLAX_GRID_HEIGHT; y++) {
-            front_tiles[x][y] = getrandom() % num_star_tiles;
-            back_tiles[x][y] = getrandom() % num_star_tiles;
+            front_tiles[x][y] = GetRandom() % num_star_tiles;
+            back_tiles[x][y] = GetRandom() % num_star_tiles;
         }
     }
 }
@@ -51,19 +52,19 @@ void DrawBackground(SDL_Surface *dest, int camera_x, int camera_y)
 {
     int draw_x, draw_y;	/* drawing position on the screen */
     int start_draw_x, start_draw_y;
-		
+
     int tile_x, tile_y;	/* indices in the back_tiles[][] array */
     int start_tile_x, start_tile_y;
-	
+
     /* Map the camera position into tile indices. */
     start_tile_x = ((camera_x / PARALLAX_BACK_FACTOR) /
                     TILE_WIDTH) % PARALLAX_GRID_WIDTH;
     start_tile_y = ((camera_y / PARALLAX_BACK_FACTOR) /
                     TILE_HEIGHT) % PARALLAX_GRID_HEIGHT;
-	
+
     start_draw_x = -((camera_x/PARALLAX_BACK_FACTOR) % TILE_WIDTH);
     start_draw_y = -((camera_y/PARALLAX_BACK_FACTOR) % TILE_HEIGHT);
-	
+
     /* Use nested loops to scan down the screen, drawing rows of tiles. */
     tile_y = start_tile_y;
     draw_y = start_draw_y;
@@ -72,7 +73,7 @@ void DrawBackground(SDL_Surface *dest, int camera_x, int camera_y)
         draw_x = start_draw_x;
         while (draw_x < SCREEN_WIDTH) {
             SDL_Rect srcrect, destrect;
-			
+
             srcrect.x = TILE_WIDTH * back_tiles[tile_x][tile_y];
             srcrect.y = 0;
             srcrect.w = TILE_WIDTH;
@@ -81,10 +82,10 @@ void DrawBackground(SDL_Surface *dest, int camera_x, int camera_y)
             destrect.y = draw_y;
             destrect.w = TILE_WIDTH;
             destrect.h = TILE_HEIGHT;
-			
+
             SDL_BlitSurface(back_star_tiles,&srcrect,dest,&destrect);
-			
-            tile_x++;	
+
+            tile_x++;
             tile_x %= PARALLAX_GRID_WIDTH;
             draw_x += TILE_WIDTH;
         }
@@ -98,19 +99,19 @@ void DrawParallax(SDL_Surface *dest, int camera_x, int camera_y)
 {
     int draw_x, draw_y;	/* drawing position on the screen */
     int start_draw_x, start_draw_y;
-		
+
     int tile_x, tile_y;	/* indices in the back_tiles[][] array */
     int start_tile_x, start_tile_y;
-	
+
     /* Map the camera position into tile indices. */
     start_tile_x = ((camera_x / PARALLAX_FRONT_FACTOR) /
                     TILE_WIDTH) % PARALLAX_GRID_WIDTH;
     start_tile_y = ((camera_y / PARALLAX_FRONT_FACTOR) /
                     TILE_HEIGHT) % PARALLAX_GRID_HEIGHT;
-	
+
     start_draw_x = -((camera_x/PARALLAX_FRONT_FACTOR) % TILE_WIDTH);
     start_draw_y = -((camera_y/PARALLAX_FRONT_FACTOR) % TILE_HEIGHT);
-	
+
     /* Use nested loops to scan down the screen, drawing rows of tiles. */
     tile_y = start_tile_y;
     draw_y = start_draw_y;
@@ -119,7 +120,7 @@ void DrawParallax(SDL_Surface *dest, int camera_x, int camera_y)
         draw_x = start_draw_x;
         while (draw_x < SCREEN_WIDTH) {
             SDL_Rect srcrect, destrect;
-			
+
             srcrect.x = TILE_WIDTH * front_tiles[tile_x][tile_y];
             srcrect.y = 0;
             srcrect.w = TILE_WIDTH;
@@ -128,9 +129,9 @@ void DrawParallax(SDL_Surface *dest, int camera_x, int camera_y)
             destrect.y = draw_y;
             destrect.w = TILE_WIDTH;
             destrect.h = TILE_HEIGHT;
-			
+
             SDL_BlitSurface(front_star_tiles,&srcrect,dest,&destrect);
-			
+
             tile_x++;
             tile_x %= PARALLAX_GRID_WIDTH;
             draw_x += TILE_WIDTH;
