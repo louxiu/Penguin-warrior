@@ -2,7 +2,17 @@
 #define GAMEDEFS_H
 
 #include <SDL/SDL.h>
+
+#ifdef __APPLE__
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+/* #include <OpenAL/alext.h> */
+/* TODO: */
+#elif __linux
 #include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
+#endif
 
 /* Dimensions of the game window. */
 #define SCREEN_WIDTH	640
@@ -62,7 +72,7 @@
 /* Roughly the number of charge units per second. */
 #define PHASER_CHARGE_RATE              30
 
-/* Duration of each phaser shot, in ticks. (30 ticks/second) */ 
+/* Duration of each phaser shot, in ticks. (30 ticks/second) */
 #define PHASER_FIRE_TIME                5
 
 /* Time to delay before respawning, in ticks. */
@@ -108,4 +118,3 @@ typedef struct sound_s
 } sound_t, *sound_p;
 
 #endif
-

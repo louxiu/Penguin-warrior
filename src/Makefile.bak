@@ -1,7 +1,17 @@
 CC=gcc
 CFLAGS=-W -Wall -ggdb `sdl-config --cflags` `guile-config link` `guile-config compile`
-LIBS=-lm `sdl-config --libs` -ltcl -lopenal -lsndfile -lvorbisfile -lvorbis -logg
+LIBS=-lm `sdl-config --libs` -ltcl -lsndfile -lvorbisfile -lvorbis -logg
 OBJS=audio.o music.o main.o particle.o background.o resources.o scripting.o network.o weapon.o status.o radar.o
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	CFLAGS += -lopenal
+endif
+
+ifeq ($(UNAME_S),Darwin)
+	CFLAGS += -framework OpenAL
+	LIBS += -framework OpenAL
+endif
 
 .PHONY: clean default check-syntax
 

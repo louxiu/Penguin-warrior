@@ -8,8 +8,8 @@
 #define OPENAL_ENABLE
 #ifdef OPENAL_ENABLE
 /* Include the OpenAL headers. */
-#include <AL/al.h>
-#include <AL/alc.h>
+/* #include <AL/al.h> */
+/* #include <AL/alc.h> */
 
 /* Audio attenuation factor. */
 #define DISTANCE_FACTOR 100.0
@@ -56,14 +56,14 @@ void InitAudio()
         fprintf(stderr, "Warning: NULL device.\n");
     else
         fprintf(stderr, "Got a device.\n");
-    
+
     audio_context = alcCreateContext(audio_device, NULL);
 
     err = alcGetError(audio_device);
     if (err != ALC_NO_ERROR || audio_context == NULL)
     {
-        fprintf(stderr, 
-                "Unable to create an OpenAL context (%s). Audio disabled.\n", 
+        fprintf(stderr,
+                "Unable to create an OpenAL context (%s). Audio disabled.\n",
                 alGetString(err));
         return;
     }
@@ -77,7 +77,7 @@ void InitAudio()
     alcMakeContextCurrent(audio_context);
     if (alcGetError(audio_device) != ALC_NO_ERROR)
     {
-        fprintf(stderr, 
+        fprintf(stderr,
                 "Unable to make OpenAL context current. Audio disabled.\n");
         audio_cleanup(audio_context);
         return;
@@ -248,7 +248,7 @@ void CleanupAudio(void)
 {
     //Quit SDL_mixer
     Mix_CloseAudio();
-    
+
 };
 
 void UpdateAudio(player_p player, player_p opponent){};

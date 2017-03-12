@@ -6,9 +6,9 @@
 
 #define OPENAL_ENABLE
 #ifdef OPENAL_ENABLE
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <AL/alext.h>    /* alBufferAppendWriteData_LOKI is an extension. */
+/* #include <AL/al.h> */
+/* #include <AL/alc.h> */
+/* #include <AL/alext.h>    /\* alBufferAppendWriteData_LOKI is an extension. *\/ */
 #endif /* OPENAL_ENABLE */
 
 #include <vorbis/codec.h>
@@ -134,9 +134,9 @@ int LoadMusic(char *filename)
 	   music_info->rate,
 	   music_info->channels,
 	   filename);
-      
+
     music_file_loaded = 1;
-	
+
     return 0;
 }
 
@@ -198,9 +198,9 @@ void UpdateMusic()
     /* { */
     /*     printf("init - no errors after 3\n"); */
     /* } */
-    
+
     /* alSourcei(music_source, AL_BUFFER, music_buffer); */
-    
+
     /* alSourcePlay(music_source); */
     /* if(alGetError() != AL_NO_ERROR) */
     /* { */
@@ -212,10 +212,10 @@ void UpdateMusic()
     /*     printf("init - no errors after 4\n"); */
     /* } */
     /* return; */
-    
+
     int written;
     int format;
-	
+
     if (music_enabled && music_file_loaded)
     {
         /* Do we need to fetch more data? */
@@ -223,7 +223,7 @@ void UpdateMusic()
         {
             buf_count = 0;
             buf_pos = 0;
-			
+
             if (music_playing)
             {
                 /* libvorbisfile does not always return the full amount of
@@ -245,7 +245,7 @@ void UpdateMusic()
                         music_playing = 0;
                         break;
                     }
-                    
+
                     /* Slow down the loop a bit. Otherwise Vorbis decoding
                        will take huge spikes of CPU and cause noticeable jolts
                        in the main loop, even though this is running in a
@@ -308,7 +308,7 @@ void UpdateMusic()
             {
                 /// written = MUSIC_BUF_SIZE-buf_pos;
             }
-        
+
             /* Update the buffer position based on how much data we wrote.
                If we've played the entire buffer, set the position to -1 so
                that the next call to UpdateMusic will refill the buffer. */
@@ -336,7 +336,7 @@ void InitMusic()
         printf("Unable to initialize music since audio isn't enabled.\n");
         return;
     }
-    
+
 };
 void CleanupMusic()
 {
@@ -367,7 +367,7 @@ void StopMusic()
     //If the music is paused
     if( Mix_PausedMusic() != 1 )
     {
-        Mix_HaltMusic();        
+        Mix_HaltMusic();
         /// Mix_PauseMusic();
     }
 };
@@ -382,4 +382,3 @@ void UpdateMusic()
 };
 
 #endif /* OPENAL_ENABLE */
-
