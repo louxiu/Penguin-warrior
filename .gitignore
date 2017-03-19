@@ -29,3 +29,4 @@ stamp-h1
 config.h
 config.h.in
 Makefile.in
+build

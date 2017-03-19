@@ -101,7 +101,7 @@ int LoadGameScript()
 
     status = Tcl_EvalFile(interp, "pw.tcl");
     if (status != TCL_OK) {
-        fprintf(stderr, "Error executing %s: %s\n", filename,
+        fprintf(stderr, "Error executing %s: %s\n", "pw.tcl",
                 Tcl_GetStringResult(interp));
         return -1;
     }

@@ -1,19 +1,29 @@
 CC=gcc
-CFLAGS=-W -Wall -ggdb `sdl-config --cflags` `guile-config link` `guile-config compile`
-LIBS=-lm `sdl-config --libs` -ltcl -lsndfile -lvorbisfile -lvorbis -logg
-OBJS=audio.o music.o main.o particle.o background.o resources.o scripting.o network.o weapon.o status.o radar.o
+CFLAGS=-W -Wall -ggdb `sdl-config --cflags` `guile-config compile`
+LIBS=-lm `sdl-config --libs` `guile-config link` -ltcl -lsndfile -lvorbisfile -lvorbis -logg
+INS_DEPS=
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	CFLAGS += -lopenal
+	INS_DEPS= sudo apt-get install libsdl1.2-dev libsdl-mixer1.2-dev tcl-dev guile-1.8-dev libopenal-dev libsndfile1-dev libalut-dev
+# sudo apt-get install build-essential autotools-dev autoconf vim
 endif
 
 ifeq ($(UNAME_S),Darwin)
-	CFLAGS += -framework OpenAL
 	LIBS += -framework OpenAL
+	INS_DEPS= brew install sdl sdl_mixer guile libsndfile freealut
+# openal, tcl already supported by mac
 endif
 
-.PHONY: clean default check-syntax
+SRC = $(wildcard *.c)
+OBJ = $(patsubst %.c, %.o, $(SRC))
+
+pw: dep $(OBJ)
+	$(CC) $(CFLAGS) $(LIBS) $(OBJ) -o pw
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 check-syntax:
 	$(CC) $(CFLAGS) -Wall -Wextra -fsyntax-only $(CHK_SOURCES)
@@ -22,41 +32,18 @@ default:
 	@echo 'Plese check the variables at the top of the Makefile, then run make pw.'
 
 clean:
-	rm -f pw $(OBJS)
+	rm -f pw $(OBJ)
 	rm -f *~
 
-pw: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o pw $(LIBS)
+.PHONY: clean default check-syntax
 
-main.o:	main.c gamedefs.h
-	$(CC) $(CFLAGS) -c main.c
+dep:
+	@echo 'install depands...'
+	$(INS_DEPS)
 
-particle.o: particle.c particle.h gamedefs.h
-	$(CC) $(CFLAGS) -c particle.c
+# support gyp
+gyp-make:
+	gyp pw.gyp --depth=. -f make --generator-output=./build
 
-background.o: background.c background.h gamedefs.h
-	$(CC) $(CFLAGS) -c background.c
-
-resources.o: resources.c resources.h gamedefs.h
-	$(CC) $(CFLAGS) -c resources.c
-
-scripting.o: scripting.c scripting.h gamedefs.h
-	$(CC) $(CFLAGS) -c scripting.c
-
-network.o: network.c network.h gamedefs.h
-	$(CC) $(CFLAGS) -c network.c
-
-audio.o: audio.c audio.h gamedefs.h
-	$(CC) $(CFLAGS) -c audio.c
-
-music.o: music.c music.h gamedefs.h
-	$(CC) $(CFLAGS) -c music.c
-
-weapon.o: weapon.c weapon.h gamedefs.h
-	$(CC) $(CFLAGS) -c weapon.c
-
-status.o: status.c status.h gamedefs.h
-	$(CC) $(CFLAGS) -c status.c
-
-radar.o: radar.c radar.h gamedefs.h
-	$(CC) $(CFLAGS) -c radar.c
+gyp-xcode:
+	gyp pw.gyp --depth=. -f xcode --generator-output=./build/xcodefiles
