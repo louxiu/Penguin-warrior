@@ -99,9 +99,9 @@ int LoadGameScript()
 {
     int status;
 
-    status = Tcl_EvalFile(interp, "pw.tcl");
+    status = Tcl_EvalFile(interp, "opponent.tcl");
     if (status != TCL_OK) {
-        fprintf(stderr, "Error executing %s: %s\n", "pw.tcl",
+        fprintf(stderr, "Error executing %s: %s\n", "opponent.tcl",
                 Tcl_GetStringResult(interp));
         return -1;
     }
