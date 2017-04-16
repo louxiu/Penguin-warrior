@@ -1,12 +1,12 @@
 -- refer opponent.tcl and opponent.scm
 
-local world = {
+world = {
    width = 0,
    height = 0,
 }
 
 -- player's thrust is not used in this script now
-local player = {
+player = {
    x = 0,
    y = 0,
    angle = 0,
@@ -17,7 +17,7 @@ local player = {
    }
 }
 
-local opponent = {
+opponent = {
    x = 0,
    y = 0,
    angle = 0,
@@ -29,14 +29,14 @@ local opponent = {
 }
 
 -- virtual target
-local target = {
+target = {
    x = 0,
    y = 0,
    angle = 0,
 }
 
 -- attack 0, envade 1
-local state = 0
+state = 0
 
 -- NOTE: the subject of this script is opponent
 function getAngleToTarget(target)

@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-W -Wall -ggdb `sdl-config --cflags` `guile-config compile`
-LIBS=-lm `sdl-config --libs` `guile-config link` -ltcl -lsndfile -lvorbisfile -lvorbis -logg
+CFLAGS=-W -Wall -ggdb `sdl-config --cflags` `guile-config compile` `pkg-config lua5.1 --cflags`
+LIBS=-lm `sdl-config --libs` `guile-config link` -ltcl -lsndfile -lvorbisfile -lvorbis -logg `pkg-config lua5.1 --libs`
 INS_DEPS=
 
 UNAME_S := $(shell uname -s)

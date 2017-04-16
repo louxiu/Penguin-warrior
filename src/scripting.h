@@ -3,9 +3,9 @@
 
 #include "gamedefs.h"
 
-void InitScripting(void);
-void CleanupScripting(void);
+void InitScripting();
+void CleanupScripting();
 int LoadGameScript();
-int RunGameScript(void);
+int RunGameScript();
 
 #endif

@@ -160,8 +160,9 @@ int RunGameScript()
 
     return 0;
 }
+#endif
 
-#else /* TCL_ENABLE */
+#ifdef SCM_ENABLE
 #include <libguile.h>
 
 /* TODO: use scm moudle and split scm script */
@@ -173,11 +174,13 @@ SCM HandleFireWeaponCmd()
     if (CanPlayerFire(&opponent)) {
         FirePhasers(&opponent);
     }
-        return scm_from_int(0);
+    return scm_from_int(0);
 }
 
 static Sint32 seed = 0;
 
+/* No random function in scm. */
+/* http://stackoverflow.com/questions/14674165/scheme-generate-random */
 static void SchemeInitRandom()
 {
     seed = time(NULL);
@@ -290,5 +293,168 @@ void CleanupScripting()
 {
     // TODO: Do not need in guile?
 }
+#endif
 
+#define LUA_ENABLE
+#ifdef LUA_ENABLE
+
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+typedef struct {
+    char *name;
+    int   type;
+    void *value;
+} table_field;
+
+static void SetFields(lua_State *L, int index, const table_field *fields) {
+    for (int i = 0; fields[i].name; i++) {
+        table_field f = fields[i];
+        switch (f.value == NULL ? LUA_TNIL : f.type) {
+            case LUA_TFUNCTION:
+                lua_pushcfunction(L, (lua_CFunction) f.value);
+                break;
+            case LUA_TNUMBER:
+                lua_pushinteger(L, *((lua_Integer *) f.value));
+                break;
+            case LUA_TSTRING:
+                lua_pushstring(L, (const char *) f.value);
+                break;
+            case LUA_TNIL:
+                lua_pushnil(L);
+                break;
+        }
+        lua_setfield(L, index, f.name);
+    }
+}
+
+int HandleFireWeaponCmd(lua_State *L) {
+    if (CanPlayerFire(&opponent)) {
+        FirePhasers(&opponent);
+    }
+	return 0;
+}
+
+lua_State *L = NULL;
+
+void InitScripting()
+{
+    L = luaL_newstate();
+    luaL_openlibs(L);
+
+    char *file = "opponent.lua";
+    if (luaL_dofile(L, file)) {
+        const char *cause = lua_tostring(L, -1);
+        fprintf(stderr, "%s: %s\n", file, cause);
+        return;
+    }
+
+    /* Global variables initialize */
+    int world_width = WORLD_WIDTH;
+    int world_height = WORLD_HEIGHT;
+    const table_field world_fields[] = {
+        { "width", LUA_TNUMBER, &world_width },
+        { "height", LUA_TNUMBER, &world_height },
+        { NULL,       0,           NULL      },
+    };
+    lua_getglobal(L, "world");
+    SetFields(L, 1, world_fields);
+
+    int forward_thrust = 3;
+    int reverse_thrust = -1;
+    const table_field thrust_fields[] = {
+        { "forward", LUA_TNUMBER, &forward_thrust },
+        { "reverse", LUA_TNUMBER, &reverse_thrust },
+        { NULL,       0,           NULL      },
+    };
+    lua_getglobal(L, "player");
+    lua_getfield(L, 2, "thrust");
+    SetFields(L, 3, thrust_fields);
+
+    lua_getglobal(L, "opponent");
+    lua_getfield(L, 4, "thrust");
+    SetFields(L, 5, thrust_fields);
+
+    lua_pop(L, 5);
+
+	lua_register(L, "fireWeapon", HandleFireWeaponCmd);
+    // printf("lua_gettop = %d\n", lua_gettop(L));
+}
+
+void CleanupScripting()
+{
+    lua_close(L);
+}
+
+int LoadGameScript()
+{
+    /* TODO: */
+    return 0;
+}
+
+int RunGameScript()
+{
+    /// Update the variables in scheme script.
+    const table_field player_fields[] = {
+        { "x", LUA_TNUMBER, &player.world_x },
+        { "y", LUA_TNUMBER, &player.world_y },
+        { "angle", LUA_TNUMBER, &player.angle },
+        { "accel", LUA_TNUMBER, &player.accel },
+        { NULL,       0,           NULL      },
+    };
+    lua_getglobal(L, "player");
+    SetFields(L, 1, player_fields);
+
+    const table_field opponent_fields[] = {
+        { "x", LUA_TNUMBER, &opponent.world_x },
+        { "y", LUA_TNUMBER, &opponent.world_y },
+        { "angle", LUA_TNUMBER, &opponent.angle },
+        { "accel", LUA_TNUMBER, &opponent.accel },
+        { NULL,       0,           NULL      },
+    };
+    lua_getglobal(L, "opponent");
+    SetFields(L, 2, opponent_fields);
+
+    lua_getglobal(L, "playOpponent");
+    if (lua_pcall(L, 0, 0, 0))
+    {
+        fprintf(stderr, "FATAL ERROR: %s\n", lua_tostring(L, -1));
+        return 1;
+    }
+
+    /* update opponent accel and angle */
+    lua_getfield(L, 2, "angle");
+    opponent.angle = lua_tonumber(L, -1);
+    // TODO: return value is not correct
+    // printf("angle------- %lf\n", opponent.angle);
+
+    lua_getfield(L, 2, "accel");
+    opponent.accel = lua_tonumber(L, -1);
+
+    lua_pop(L, 4);
+    // printf("lua_gettop = %d\n", lua_gettop(L));
+
+    if (opponent.accel > PLAYER_FORWARD_THRUST){
+        opponent.accel = PLAYER_FORWARD_THRUST;
+    }
+    if (opponent.accel < PLAYER_REVERSE_THRUST){
+        opponent.accel = PLAYER_REVERSE_THRUST;
+    }
+
+    while (opponent.angle >= 360){
+        /* TODO: something wrong here */
+        // printf("in angle1 %lf\n", opponent.angle);
+        // opponent.angle -= 360.0;
+        opponent.angle = 30;
+        // printf("in angle3 %lf\n", opponent.angle);
+        // exit(1);
+    }
+    while (opponent.angle < 0){
+        printf("in angle2\n");
+        opponent.angle += 360;
+    }
+
+    return 0;
+}
 #endif
