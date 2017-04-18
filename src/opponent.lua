@@ -38,6 +38,19 @@ target = {
 -- attack 0, envade 1
 state = 0
 
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
 -- NOTE: the subject of this script is opponent
 function getAngleToTarget(target)
    -- TODO: modify scm, tcl code
@@ -60,6 +73,9 @@ function getDistanceToTarget(target)
 end
 
 function playOpponent()
+   -- print("before playOpponent player ", dump(player))
+   -- print("before playOpponent opponent ", dump(opponent))
+
    -- attack
    if state == 0 then
       target.x = player.x
@@ -93,8 +109,8 @@ function playOpponent()
          state = 0
       else
          if target.x < 0 then
-            target.x = random() * world.width
-            target.y = random() * world.height
+            target.x = math.random() * world.width
+            target.y = math.random() * world.height
          else
             opponent.accel = player.thrust.forward
          end
@@ -113,4 +129,6 @@ function playOpponent()
    else
       opponent.angle = opponent.angle - 3
    end
+   -- print("after playOpponent player ", dump(player))
+   -- print("after playOpponent opponent ", dump(opponent))
 end

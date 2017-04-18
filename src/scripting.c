@@ -8,6 +8,14 @@ extern player_t player, opponent;
 void FirePhasers(player_p p);
 int CanPlayerFire(player_p p);
 
+void PrintPlayer(player_t *obj)
+{
+    fprintf(stdout, "obj->world_x = %f\n", obj->world_x);
+    fprintf(stdout, "obj->world_y = %f\n", obj->world_y);
+    fprintf(stdout, "obj->angle = %f\n", obj->angle);
+    fprintf(stdout, "obj->accel = %f\n", obj->accel);
+}
+
 /* #define TCL_ENABLE */
 #ifdef TCL_ENABLE
 
@@ -29,7 +37,8 @@ void InitScripting(void)
     interp = Tcl_CreateInterp();
     if (interp == NULL) {
         fprintf(stderr, "Unable to initialize Tcl.\n");
-        exit(EXIT_FAILURE);
+        /* TODO: should check return value */
+        return;
     }
 
     /* Add the "fireWeapon" command. */
@@ -37,7 +46,7 @@ void InitScripting(void)
                              HandleFireWeaponCmd, (ClientData) 0,
                              NULL) == NULL) {
         fprintf(stderr, "Error creating Tcl command.\n");
-        exit(EXIT_FAILURE);
+        return;
     }
 
     /* Link the important parts of our player data structures to global
@@ -316,7 +325,7 @@ static void SetFields(lua_State *L, int index, const table_field *fields) {
                 lua_pushcfunction(L, (lua_CFunction) f.value);
                 break;
             case LUA_TNUMBER:
-                lua_pushinteger(L, *((lua_Integer *) f.value));
+                lua_pushnumber(L, *((lua_Number *) f.value));
                 break;
             case LUA_TSTRING:
                 lua_pushstring(L, (const char *) f.value);
@@ -330,6 +339,7 @@ static void SetFields(lua_State *L, int index, const table_field *fields) {
 }
 
 int HandleFireWeaponCmd(lua_State *L) {
+    (void) L;
     if (CanPlayerFire(&opponent)) {
         FirePhasers(&opponent);
     }
@@ -361,8 +371,8 @@ void InitScripting()
     lua_getglobal(L, "world");
     SetFields(L, 1, world_fields);
 
-    int forward_thrust = 3;
-    int reverse_thrust = -1;
+    int forward_thrust = PLAYER_FORWARD_THRUST;
+    int reverse_thrust = PLAYER_REVERSE_THRUST;
     const table_field thrust_fields[] = {
         { "forward", LUA_TNUMBER, &forward_thrust },
         { "reverse", LUA_TNUMBER, &reverse_thrust },
@@ -395,7 +405,12 @@ int LoadGameScript()
 
 int RunGameScript()
 {
-    /// Update the variables in scheme script.
+    /* fprintf(stdout, "-------player-------\n"); */
+    /* PrintPlayer(&player); */
+    /* fprintf(stdout, "-------opponent-------\n"); */
+    /* PrintPlayer(&opponent); */
+
+    // Update the variables in scheme script.
     const table_field player_fields[] = {
         { "x", LUA_TNUMBER, &player.world_x },
         { "y", LUA_TNUMBER, &player.world_y },
@@ -426,8 +441,6 @@ int RunGameScript()
     /* update opponent accel and angle */
     lua_getfield(L, 2, "angle");
     opponent.angle = lua_tonumber(L, -1);
-    // TODO: return value is not correct
-    // printf("angle------- %lf\n", opponent.angle);
 
     lua_getfield(L, 2, "accel");
     opponent.accel = lua_tonumber(L, -1);
@@ -443,15 +456,9 @@ int RunGameScript()
     }
 
     while (opponent.angle >= 360){
-        /* TODO: something wrong here */
-        // printf("in angle1 %lf\n", opponent.angle);
-        // opponent.angle -= 360.0;
-        opponent.angle = 30;
-        // printf("in angle3 %lf\n", opponent.angle);
-        // exit(1);
+        opponent.angle -= 360.0;
     }
     while (opponent.angle < 0){
-        printf("in angle2\n");
         opponent.angle += 360;
     }
 

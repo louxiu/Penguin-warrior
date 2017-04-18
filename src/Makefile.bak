@@ -12,7 +12,7 @@ endif
 
 ifeq ($(UNAME_S),Darwin)
 	LIBS += -framework OpenAL
-	INS_DEPS= brew install sdl sdl_mixer guile libsndfile freealut
+#	INS_DEPS= brew install sdl sdl_mixer guile libsndfile freealut
 # openal, tcl already supported by mac
 endif
 
