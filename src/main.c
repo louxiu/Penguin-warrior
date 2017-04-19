@@ -167,8 +167,7 @@ static void UpdatePlayer(player_p p)
     if (p->type == WARRIOR){
         if (p->velocity > PLAYER_MAX_VELOCITY) p->velocity = PLAYER_MAX_VELOCITY;
         if (p->velocity < PLAYER_MIN_VELOCITY) p->velocity = PLAYER_MIN_VELOCITY;
-    }
-    else if (p->type == DEVIL){
+    }else if (p->type == DEVIL){
         if (p->velocity > DEVIL_MAX_VELOCITY) p->velocity = DEVIL_MAX_VELOCITY;
         if (p->velocity < DEVIL_MIN_VELOCITY) p->velocity = DEVIL_MIN_VELOCITY;
     }

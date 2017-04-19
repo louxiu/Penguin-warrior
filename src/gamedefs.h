@@ -43,8 +43,8 @@
 #define DEVIL_MAX_VELOCITY	(13.0)
 #define DEVIL_MIN_VELOCITY	(-10.0)
 
-#define PLAYER_FORWARD_THRUST	(3)
-#define PLAYER_REVERSE_THRUST	(-1)
+#define PLAYER_FORWARD_THRUST	3
+#define PLAYER_REVERSE_THRUST	-1
 
 /* These define the scrolling speeds of the front and back background
    layers, relative to the movement of the camera. */

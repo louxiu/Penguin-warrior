@@ -73,7 +73,6 @@ function getDistanceToTarget(target)
 end
 
 function playOpponent()
-   -- print("before playOpponent player ", dump(player))
    -- print("before playOpponent opponent ", dump(opponent))
 
    -- attack
@@ -84,8 +83,8 @@ function playOpponent()
       local distance = getDistanceToTarget(target)
 
       if distance < 30 then
+         print("change to envade mode")
          state = 1
-         -- TODO: -1?
          target.x = -1
       else
          if distance > 100 then
@@ -99,21 +98,21 @@ function playOpponent()
          end
 
          if distance < 200 then
-            -- TODO
             fireWeapon()
          end
       end
    else
       -- envade
+      print("in envade mode: ", dump(target), dump(opponent))
       if math.abs(target.x - opponent.x) < 10 and math.abs(target.y - opponent.y) < 10 then
+         print("change to attack mode")
          state = 0
       else
          if target.x < 0 then
             target.x = math.random() * world.width
             target.y = math.random() * world.height
-         else
-            opponent.accel = player.thrust.forward
          end
+         opponent.accel = player.thrust.forward
       end
    end
 

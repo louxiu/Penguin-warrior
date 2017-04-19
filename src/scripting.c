@@ -361,8 +361,8 @@ void InitScripting()
     }
 
     /* Global variables initialize */
-    int world_width = WORLD_WIDTH;
-    int world_height = WORLD_HEIGHT;
+    double world_width = WORLD_WIDTH;
+    double world_height = WORLD_HEIGHT;
     const table_field world_fields[] = {
         { "width", LUA_TNUMBER, &world_width },
         { "height", LUA_TNUMBER, &world_height },
@@ -371,8 +371,8 @@ void InitScripting()
     lua_getglobal(L, "world");
     SetFields(L, 1, world_fields);
 
-    int forward_thrust = PLAYER_FORWARD_THRUST;
-    int reverse_thrust = PLAYER_REVERSE_THRUST;
+    double forward_thrust = PLAYER_FORWARD_THRUST;
+    double reverse_thrust = PLAYER_REVERSE_THRUST;
     const table_field thrust_fields[] = {
         { "forward", LUA_TNUMBER, &forward_thrust },
         { "reverse", LUA_TNUMBER, &reverse_thrust },
@@ -441,10 +441,11 @@ int RunGameScript()
     /* update opponent accel and angle */
     lua_getfield(L, 2, "angle");
     opponent.angle = lua_tonumber(L, -1);
-
+    // printf("opponent.angle=%f\n", opponent.angle);
     lua_getfield(L, 2, "accel");
     opponent.accel = lua_tonumber(L, -1);
-
+    // PrintPlayer(&opponent);
+    // exit(1);
     lua_pop(L, 4);
     // printf("lua_gettop = %d\n", lua_gettop(L));
 
