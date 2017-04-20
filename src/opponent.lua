@@ -56,7 +56,7 @@ function getAngleToTarget(target)
    -- TODO: modify scm, tcl code
    local deltaX = target.x - opponent.x;
    local deltaY = target.y - opponent.y;
-   local theta = math.atan(-deltaY, deltaX)
+   local theta = math.atan2(-deltaY, deltaX)
 
    if theta < 0 then
       theta = 2 * math.pi + theta
@@ -103,7 +103,6 @@ function playOpponent()
       end
    else
       -- envade
-      print("in envade mode: ", dump(target), dump(opponent))
       if math.abs(target.x - opponent.x) < 10 and math.abs(target.y - opponent.y) < 10 then
          print("change to attack mode")
          state = 0
@@ -128,6 +127,4 @@ function playOpponent()
    else
       opponent.angle = opponent.angle - 3
    end
-   -- print("after playOpponent player ", dump(player))
-   -- print("after playOpponent opponent ", dump(opponent))
 end

@@ -441,13 +441,9 @@ int RunGameScript()
     /* update opponent accel and angle */
     lua_getfield(L, 2, "angle");
     opponent.angle = lua_tonumber(L, -1);
-    // printf("opponent.angle=%f\n", opponent.angle);
     lua_getfield(L, 2, "accel");
     opponent.accel = lua_tonumber(L, -1);
-    // PrintPlayer(&opponent);
-    // exit(1);
     lua_pop(L, 4);
-    // printf("lua_gettop = %d\n", lua_gettop(L));
 
     if (opponent.accel > PLAYER_FORWARD_THRUST){
         opponent.accel = PLAYER_FORWARD_THRUST;
